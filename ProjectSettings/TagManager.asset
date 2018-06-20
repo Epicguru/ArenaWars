@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Player Agent
+  - Bot Agent
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - Post Processing
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Map
+    uniqueID: 3813579937
+    locked: 0
+  - name: Effects
+    uniqueID: 254574237
+    locked: 0
+  - name: Bottom Items
+    uniqueID: 3418522901
+    locked: 0
+  - name: Agents
+    uniqueID: 1738282033
+    locked: 0
+  - name: Top Items
+    uniqueID: 734614081
+    locked: 0

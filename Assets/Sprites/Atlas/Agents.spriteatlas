@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: Agents
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: d59aaba1ca88d634a9feb204b12d42aa, type: 3}
+    - {fileID: 102900000, guid: 6826acb54ec6cac419a7d9d5282047cc, type: 3}
+    bindAsDefault: 1
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 0d5e2048b5006e7478b0a8aab7ccf78e, type: 3}
+  - {fileID: 21300000, guid: 467bd38dc6bcbd349b61139bad5aef23, type: 3}
+  - {fileID: 21300000, guid: 48ab787957b0a594e9fbe82204b15eaf, type: 3}
+  - {fileID: 21300000, guid: 80afe5a7f01d4584c872c12429523626, type: 3}
+  - {fileID: 21300000, guid: 061df8827bb59174ab40eb5215308074, type: 3}
+  - {fileID: 21300000, guid: 47c88509f291ab449b46e5599a396ee8, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Body
+  - Assault Rifle
+  - Dual SMG Muzzle Flash
+  - Dual SMG Body
+  - Dual SMG Barrel
+  - Dual SMG Slide
+  m_Tag: Agents
+  m_IsVariant: 0
