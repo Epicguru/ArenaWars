@@ -9,20 +9,35 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1304255267156796}
+  m_RootGameObject: {fileID: 1274779038713472}
   m_IsPrefabAsset: 1
---- !u!1 &1304255267156796
+--- !u!1 &1006362950363752
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4716493392112098}
-  - component: {fileID: 114268203942574486}
-  - component: {fileID: 114586524756724606}
-  - component: {fileID: 33837026885752112}
-  - component: {fileID: 23038752343521498}
+  - component: {fileID: 4196254620119774}
+  - component: {fileID: 33470529928276986}
+  - component: {fileID: 23544285496490464}
+  m_Layer: 0
+  m_Name: Graphics
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1274779038713472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4234900130826978}
+  - component: {fileID: 114455015232914224}
+  - component: {fileID: 114543196871833720}
   m_Layer: 0
   m_Name: Region
   m_TagString: Untagged
@@ -30,25 +45,39 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4716493392112098
+--- !u!4 &4196254620119774
 Transform:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1304255267156796}
+  m_GameObject: {fileID: 1006362950363752}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
+  m_Father: {fileID: 4234900130826978}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4234900130826978
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1274779038713472}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 4196254620119774}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &23038752343521498
+--- !u!23 &23544285496490464
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1304255267156796}
+  m_GameObject: {fileID: 1006362950363752}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -58,7 +87,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 0
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -78,19 +107,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!33 &33837026885752112
+--- !u!33 &33470529928276986
 MeshFilter:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1304255267156796}
-  m_Mesh: {fileID: 0}
---- !u!114 &114268203942574486
+  m_GameObject: {fileID: 1006362950363752}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &114455015232914224
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1304255267156796}
+  m_GameObject: {fileID: 1274779038713472}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce6f3d6de5dc5c940b690c33d03db510, type: 3}
@@ -100,7 +129,7 @@ MonoBehaviour:
   OnSpawn:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 114586524756724606}
+      - m_Target: {fileID: 114543196871833720}
         m_MethodName: UponSpawn
         m_Mode: 1
         m_Arguments:
@@ -116,7 +145,7 @@ MonoBehaviour:
   OnDespawn:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 114586524756724606}
+      - m_Target: {fileID: 114543196871833720}
         m_MethodName: UponDespawn
         m_Mode: 1
         m_Arguments:
@@ -129,12 +158,12 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
---- !u!114 &114586524756724606
+--- !u!114 &114543196871833720
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1304255267156796}
+  m_GameObject: {fileID: 1274779038713472}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 23f9abfd87755e7498cc02fee9f3c2ce, type: 3}
@@ -146,5 +175,4 @@ MonoBehaviour:
     width: 16
     height: 16
   _dirty: 0
-  Renderer: {fileID: 23038752343521498}
-  Filter: {fileID: 33837026885752112}
+  Renderer: {fileID: 23544285496490464}

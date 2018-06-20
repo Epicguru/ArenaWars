@@ -70,7 +70,6 @@ public class Region : MonoBehaviour
     private bool _dirty;
 
     public MeshRenderer Renderer;
-    public MeshFilter Filter;
 
     private Texture2D texture;
 
@@ -90,7 +89,7 @@ public class Region : MonoBehaviour
     public void UponSpawn()
     {
         Dirty = false;
-        SetMesh();
+        SetupMesh();
 
         if (texture == null)
         {
@@ -195,10 +194,10 @@ public class Region : MonoBehaviour
         }
     }
 
-    private void SetMesh()
+    private void SetupMesh()
     {
-        var mesh = MeshGen.Gen(Width, Height, 1f);
-        Filter.mesh = mesh;
+        Renderer.transform.localPosition = new Vector2(Width / 2f, Height / 2f);
+        Renderer.transform.localScale = new Vector2(Width, Height);
     }
 
     public override string ToString()
