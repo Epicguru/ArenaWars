@@ -59,6 +59,7 @@ public class AssetLoader : MonoBehaviour
             actions.Add(new KeyValuePair<string, Run>("Loading Items...", () => { Item.LoadAll(); }));
             actions.Add(new KeyValuePair<string, Run>("Loading Projectiles...", () => { ProjectileData.LoadAll(); }));
             actions.Add(new KeyValuePair<string, Run>("Loading Effects...", () => { TempEffect.LoadAll(); }));
+            actions.Add(new KeyValuePair<string, Run>("Loading Tiles...", () => { TileData.LoadAll(); }));
             actions.Add(new KeyValuePair<string, Run>("Registering Items...", () => { Item.NetRegisterAll(); }));
 
 
@@ -100,6 +101,7 @@ public class AssetLoader : MonoBehaviour
             TempEffect.UnloadAll();
             Item.UnloadAll();
             MeshGen.ClearCache();
+            TileData.UnloadAll();
 
             // Resources cleanup...
             Resources.UnloadUnusedAssets();

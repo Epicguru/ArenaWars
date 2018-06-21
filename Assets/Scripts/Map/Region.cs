@@ -71,6 +71,7 @@ public class Region : MonoBehaviour
 
     public MeshRenderer Renderer;
 
+    [HideInInspector]
     private Texture2D texture;
 
     public Vector2Int GetRequiredTextureSize()
@@ -109,13 +110,23 @@ public class Region : MonoBehaviour
             // TODO load in required stuff.
         }
 
+        // Filter mode
+        texture.filterMode = FilterMode.Point;
+
         // Now ensure that it is applied to the material.
         SetRendererTexture();
+
+        // Test tiles.
+        var tile = TileData.Get(0);
+
+        SetTilePixels(0, 0, tile.GetPixels(0));
+        SetTilePixels(1, 1, tile.GetPixels(2));
+        SetTilePixels(2, 1, tile.GetPixels(8));
     }
 
     public void UponDespawn()
     {
-        if(texture != null)
+        if (texture != null)
         {
             texture = null;
         }
@@ -128,7 +139,7 @@ public class Region : MonoBehaviour
         return x >= 0 && x < Width && y >= 0 && y < Height;
     }
 
-    public void SetColours(int x, int y, Color32[] colours)
+    public void SetTilePixels(int x, int y, Color32[] pixels)
     {
         if(!InRegionBounds(x, y))
         {
@@ -142,23 +153,20 @@ public class Region : MonoBehaviour
             return;
         }
 
-        if(colours == null)
+        if(pixels == null)
         {
-            Debug.LogError("Cannot draw null colour array to the region texture!");
+            Debug.LogError("Cannot draw null pixel array to the region texture!");
             return;
         }
 
-        int pixels = PIXELS_PER_UNIT * PIXELS_PER_UNIT;
-        if(colours.Length != pixels)
+        const int TOTAL = PIXELS_PER_UNIT * PIXELS_PER_UNIT;
+        if(pixels.Length != TOTAL)
         {
-            Debug.LogError("The amount of pixels supplied ({0}) does not meet the requirement of exactly {1} pixels.".Form(colours.Length, pixels));
+            Debug.LogError("The amount of pixels supplied ({0}) does not meet the requirement of exactly {1} pixels.".Form(pixels.Length, pixels));
             return;
         }
 
-        int X = x * PIXELS_PER_UNIT;
-        int Y = y * PIXELS_PER_UNIT;
-
-        texture.SetPixels32(X, Y, PIXELS_PER_UNIT, PIXELS_PER_UNIT, colours);
+        texture.SetPixels32(x * PIXELS_PER_UNIT, y * PIXELS_PER_UNIT, PIXELS_PER_UNIT, PIXELS_PER_UNIT, pixels);
 
         Dirty = true;
     }

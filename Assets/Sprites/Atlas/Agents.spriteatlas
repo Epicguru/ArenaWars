@@ -34,18 +34,18 @@ SpriteAtlas:
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
-  - {fileID: 21300000, guid: 0d5e2048b5006e7478b0a8aab7ccf78e, type: 3}
-  - {fileID: 21300000, guid: 467bd38dc6bcbd349b61139bad5aef23, type: 3}
-  - {fileID: 21300000, guid: 48ab787957b0a594e9fbe82204b15eaf, type: 3}
-  - {fileID: 21300000, guid: 80afe5a7f01d4584c872c12429523626, type: 3}
   - {fileID: 21300000, guid: 061df8827bb59174ab40eb5215308074, type: 3}
+  - {fileID: 21300000, guid: 80afe5a7f01d4584c872c12429523626, type: 3}
+  - {fileID: 21300000, guid: 0d5e2048b5006e7478b0a8aab7ccf78e, type: 3}
   - {fileID: 21300000, guid: 47c88509f291ab449b46e5599a396ee8, type: 3}
+  - {fileID: 21300000, guid: 48ab787957b0a594e9fbe82204b15eaf, type: 3}
+  - {fileID: 21300000, guid: 467bd38dc6bcbd349b61139bad5aef23, type: 3}
   m_PackedSpriteNamesToIndex:
-  - Body
-  - Assault Rifle
-  - Dual SMG Muzzle Flash
-  - Dual SMG Body
   - Dual SMG Barrel
+  - Dual SMG Body
+  - Body
   - Dual SMG Slide
+  - Dual SMG Muzzle Flash
+  - Assault Rifle
   m_Tag: Agents
   m_IsVariant: 0
