@@ -424,6 +424,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Cam: {fileID: 1081602107}
   Shake: {fileID: 2091886087}
+  Z: -10
   TargetTransform: {fileID: 0}
   Lerp: 1
   LerpSpeed: 3.5

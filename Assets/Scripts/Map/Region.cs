@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 
 public class Region : MonoBehaviour
 {
@@ -71,7 +73,7 @@ public class Region : MonoBehaviour
 
     public MeshRenderer Renderer;
 
-    [HideInInspector]
+    [NonSerialized]
     private Texture2D texture;
 
     public Vector2Int GetRequiredTextureSize()
@@ -95,7 +97,7 @@ public class Region : MonoBehaviour
         if (texture == null)
         {
             var size = GetRequiredTextureSize();
-            texture = new Texture2D(size.x, size.y, TextureFormat.RGBA32, false);
+            texture = new Texture2D(size.x, size.y, TextureFormat.RGBA32, true, true);
 
             // TODO load in required stuff...
         }
@@ -111,7 +113,7 @@ public class Region : MonoBehaviour
         }
 
         // Filter mode
-        texture.filterMode = FilterMode.Point;
+        texture.filterMode = FilterMode.Bilinear;
 
         // Now ensure that it is applied to the material.
         SetRendererTexture();
@@ -122,6 +124,8 @@ public class Region : MonoBehaviour
         SetTilePixels(0, 0, tile.GetPixels(0));
         SetTilePixels(1, 1, tile.GetPixels(2));
         SetTilePixels(2, 1, tile.GetPixels(8));
+
+        Debug.Log(tile.GetPixels(0)[150]);
     }
 
     public void UponDespawn()
@@ -162,7 +166,7 @@ public class Region : MonoBehaviour
         const int TOTAL = PIXELS_PER_UNIT * PIXELS_PER_UNIT;
         if(pixels.Length != TOTAL)
         {
-            Debug.LogError("The amount of pixels supplied ({0}) does not meet the requirement of exactly {1} pixels.".Form(pixels.Length, pixels));
+            Debug.LogError("The amount of pixels supplied ({0}) does not meet the requirement of exactly {1} pixels.".Form(pixels.Length, TOTAL));
             return;
         }
 

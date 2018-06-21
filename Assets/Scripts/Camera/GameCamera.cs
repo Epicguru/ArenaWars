@@ -11,6 +11,7 @@ public class GameCamera : MonoBehaviour
     public CameraShake Shake;
 
     [Header("Controls")]
+    public float Z;
     public Transform TargetTransform;
     public bool Lerp = true;
     public float LerpSpeed = 5f;
@@ -38,5 +39,9 @@ public class GameCamera : MonoBehaviour
                 transform.position = new Vector3(TargetTransform.position.x, TargetTransform.position.y, transform.position.z);
             }
         }
+
+        var pos = transform.position;
+        pos.z = Z;
+        transform.position = pos;
     }
 }

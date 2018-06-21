@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
@@ -14,9 +15,9 @@ public class TileData : ScriptableObject
 
     public Sprite[] Variations;
 
-    [HideInInspector]
+    [NonSerialized]
     private Color32[] FullTexture;
-    [HideInInspector]
+    [NonSerialized]
     private Color32[][] Cache; 
 
     public Color32[] GetPixels(int index)
@@ -62,14 +63,14 @@ public class TileData : ScriptableObject
             Debug.Log(bounds);
 
             Cache[index] = new Color32[width * height];
-            int j = 0;
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     int i = (startX + x) + ((y + startY) * FullTextureSize.x);
                     var pixel = FullTexture[i];
-                    Cache[index][j++] = pixel;
+                    int j = x + y * width;
+                    Cache[index][j] = pixel;
                 }
             }
 
