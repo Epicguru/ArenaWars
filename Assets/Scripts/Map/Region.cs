@@ -9,52 +9,8 @@ public class Region : MonoBehaviour
     // Is a part of a tile map, has its own texture.
 
     public const int PIXELS_PER_UNIT = 32;
-    public RectInt Bounds;
-
-    public int X
-    {
-        get
-        {
-            return Bounds.xMin;
-        }
-        set
-        {
-            Bounds.xMin = value;
-        }
-    }
-    public int Y
-    {
-        get
-        {
-            return Bounds.yMin;
-        }
-        set
-        {
-            Bounds.yMin = value;
-        }
-    }
-    public int Width
-    {
-        get
-        {
-            return Bounds.width;
-        }
-        set
-        {
-            Bounds.width = value;
-        }
-    }
-    public int Height
-    {
-        get
-        {
-            return Bounds.height;
-        }
-        set
-        {
-            Bounds.height = value;
-        }
-    }
+    public const int CHUNK_SIZE = 16;
+    public int X, Y;
 
     public bool Dirty
     {
@@ -78,7 +34,7 @@ public class Region : MonoBehaviour
 
     public Vector2Int GetRequiredTextureSize()
     {
-        return new Vector2Int(Width * PIXELS_PER_UNIT, Height * PIXELS_PER_UNIT);
+        return new Vector2Int(CHUNK_SIZE * PIXELS_PER_UNIT, CHUNK_SIZE * PIXELS_PER_UNIT);
     }
 
     public void Update()
@@ -87,6 +43,9 @@ public class Region : MonoBehaviour
         {
             Apply();
         }
+
+        // TEST - REMOVEME!
+        MapIO.Update();
     }
 
     public void UponSpawn()
@@ -140,7 +99,7 @@ public class Region : MonoBehaviour
 
     public bool InRegionBounds(int x, int y)
     {
-        return x >= 0 && x < Width && y >= 0 && y < Height;
+        return x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE;
     }
 
     public void SetTilePixels(int x, int y, Color32[] pixels)
@@ -208,12 +167,12 @@ public class Region : MonoBehaviour
 
     private void SetupMesh()
     {
-        Renderer.transform.localPosition = new Vector2(Width / 2f, Height / 2f);
-        Renderer.transform.localScale = new Vector2(Width, Height);
+        Renderer.transform.localPosition = new Vector2(CHUNK_SIZE / 2f, CHUNK_SIZE / 2f);
+        Renderer.transform.localScale = new Vector2(CHUNK_SIZE, CHUNK_SIZE);
     }
 
     public override string ToString()
     {
-        return name + " " + Bounds;
+        return name + " ({0}, {1})";
     }
 }
