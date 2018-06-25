@@ -83,8 +83,6 @@ public class Region : MonoBehaviour
         SetTilePixels(0, 0, tile.GetPixels(0));
         SetTilePixels(1, 1, tile.GetPixels(2));
         SetTilePixels(2, 1, tile.GetPixels(8));
-
-        Debug.Log(tile.GetPixels(0)[150]);
     }
 
     public void UponDespawn()

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using UnityEngine;
 
 public static class MapIO
@@ -14,20 +15,20 @@ public static class MapIO
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            string path = Path.Combine(GameIO.DataDirectory, "Test.txt");
-            GameIO.EnsureDirectory(GameIO.DirectoryFromFile(path));
+            string mapsPath = Path.Combine(GameIO.DataDirectory, "Maps");
+            string savePath = Path.Combine(mapsPath, "Dev_0");
+            string filePath = Path.Combine(savePath, "0.txt");
+
+            GameIO.EnsureDirectory(savePath);
 
             ushort[] dataA = new ushort[Region.CHUNK_SIZE * Region.CHUNK_SIZE];
-            ushort[] dataB = new ushort[Region.CHUNK_SIZE * Region.CHUNK_SIZE];
             for (int i = 0; i < dataA.Length; i++)
             {
                 dataA[i] = (ushort)i;
-                dataB[i] = (ushort)(dataA.Length - i - 1);
             }
 
-            var fs = StartWrite(path);
+            var fs = StartWrite(filePath);
             WriteValues(fs, dataA);
-            WriteValues(fs, dataB);
 
             var data = ReadRegion(fs, 1);
 
@@ -37,7 +38,26 @@ public static class MapIO
             }
 
             End(fs);
+
+            Zip(savePath);
         }
+    }
+
+    public static void Zip(string savePath)
+    {
+        if(savePath == null)
+        {
+            Debug.LogError("Null path, cannot zip!");
+        }
+
+        if (!Directory.Exists(savePath))
+        {
+            Debug.LogError("Directory does not exist, cannot zip!");
+        }
+
+        string zipPath = Path.Combine(GameIO.DirectoryFromFile(savePath), GameIO.FileNameFromPath(savePath, false) + ".zip");
+        ZipFile.CreateFromDirectory(savePath, zipPath);
+        Debug.Log("Zipped '{0}' to '{1}'.".Form(savePath, zipPath));
     }
 
     public static FileStream StartWrite(string path)
@@ -139,6 +159,7 @@ public static class MapIO
         if(read != size)
         {
             Debug.LogError("The amount of bytes read ({0}) was not the expected {1}!".Form(read, size));
+            return null;
         }
 
         for (int i = 0; i < size / 2; i++)

@@ -111,8 +111,21 @@ public static class GameIO
 
     public static string DirectoryFromFile(string filePath)
     {
+        if(filePath == null)
+        {
+            Debug.LogError("Null file path, cannot get directory path!");
+        }
         string dir = Path.GetDirectoryName(filePath);
         return dir;
+    }
+
+    public static string FileNameFromPath(string filePath, bool extension)
+    {
+        if (filePath == null)
+        {
+            Debug.LogError("Null file path, cannot get name from path!");
+        }
+        return extension ? Path.GetFileName(filePath) : Path.GetFileNameWithoutExtension(filePath);
     }
 
     public static bool EnsureDirectory(string path)

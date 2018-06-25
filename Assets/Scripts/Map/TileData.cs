@@ -60,8 +60,6 @@ public class TileData : ScriptableObject
             int startX = (int)bounds.xMin;
             int startY = (int)bounds.yMin;
 
-            Debug.Log(bounds);
-
             Cache[index] = new Color32[width * height];
             for (int x = 0; x < width; x++)
             {
