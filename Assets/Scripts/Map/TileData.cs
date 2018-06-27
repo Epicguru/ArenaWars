@@ -20,7 +20,7 @@ public class TileData : ScriptableObject
     [NonSerialized]
     private Color32[][] Cache; 
 
-    public Color32[] GetPixels(int index)
+    public Color32[] GetPixels(byte index)
     {
         if(index < 0 || index >= Variations.Length)
         {

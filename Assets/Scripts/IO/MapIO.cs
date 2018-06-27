@@ -11,53 +11,64 @@ public static class MapIO
     private static byte[] byteArray;
     private static ushort[] ushortArray;
 
-    public static void Update()
+    public static void Zip(string sourceDirectory, string destinationPath)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if(sourceDirectory == null)
         {
-            string mapsPath = Path.Combine(GameIO.DataDirectory, "Maps");
-            string savePath = Path.Combine(mapsPath, "Dev_0");
-            string filePath = Path.Combine(savePath, "0.txt");
-
-            GameIO.EnsureDirectory(savePath);
-
-            ushort[] dataA = new ushort[Region.CHUNK_SIZE * Region.CHUNK_SIZE];
-            for (int i = 0; i < dataA.Length; i++)
-            {
-                dataA[i] = (ushort)i;
-            }
-
-            var fs = StartWrite(filePath);
-            WriteValues(fs, dataA);
-
-            var data = ReadRegion(fs, 1);
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                Debug.Log(data[i]);
-            }
-
-            End(fs);
-
-            Zip(savePath);
-        }
-    }
-
-    public static void Zip(string savePath)
-    {
-        if(savePath == null)
-        {
-            Debug.LogError("Null path, cannot zip!");
+            Debug.LogError("Null source directory string, cannot zip!");
         }
 
-        if (!Directory.Exists(savePath))
+        if (!Directory.Exists(sourceDirectory))
         {
             Debug.LogError("Directory does not exist, cannot zip!");
         }
 
-        string zipPath = Path.Combine(GameIO.DirectoryFromFile(savePath), GameIO.FileNameFromPath(savePath, false) + ".zip");
-        ZipFile.CreateFromDirectory(savePath, zipPath);
-        Debug.Log("Zipped '{0}' to '{1}'.".Form(savePath, zipPath));
+        if (destinationPath == null)
+        {
+            Debug.LogError("Null destination path string, cannot zip!");
+        }
+
+        if (File.Exists(destinationPath))
+        {
+            File.Delete(destinationPath);
+        }
+
+        GameIO.EnsureDirectory(GameIO.DirectoryFromFile(destinationPath));
+        ZipFile.CreateFromDirectory(sourceDirectory, destinationPath, CompressionLevel.Optimal, false);
+        Debug.Log("Zipped '{0}' to '{1}'.".Form(sourceDirectory, destinationPath));
+    }
+
+    public static void UnZip(string zipPath, string destinationDir, bool deleteExistingDir = true)
+    {
+        if(string.IsNullOrWhiteSpace(zipPath))
+        {
+            Debug.LogError("Null or blank zip file path! Cannot unzip!");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(destinationDir))
+        {
+            Debug.LogError("Null or blank destination directory path! Cannot unzip!");
+            return;
+        }
+
+        if (!File.Exists(zipPath))
+        {
+            Debug.LogError("Did not find zip file at '{0}', cannot unzip!".Form(zipPath));
+            return;
+        }
+
+        if (Directory.Exists(destinationDir))
+        {
+            // Delete it?
+            if (deleteExistingDir)
+            {
+                Directory.Delete(destinationDir, true);
+            }
+        }
+
+        GameIO.EnsureDirectory(destinationDir);
+        ZipFile.ExtractToDirectory(zipPath, destinationDir);
     }
 
     public static FileStream StartWrite(string path)
@@ -174,5 +185,34 @@ public static class MapIO
         }
 
         return ushortArray;
+    }
+
+    public static ushort[] ReadAll(FileStream fs, int totalRegions)
+    {
+        int tileCount = totalRegions * Region.CHUNK_SIZE * Region.CHUNK_SIZE;
+        var ba = new byte[tileCount * 2];
+
+        int size = ba.Length;
+        int read = fs.Read(ba, 0, size);
+        if (read != size)
+        {
+            Debug.LogError("The amount of bytes read ({0}) was not the expected {1}!".Form(read, size));
+            return null;
+        }
+
+        var usa = new ushort[tileCount];
+
+        for (int i = 0; i < size / 2; i++)
+        {
+            // The writer saves the bytes in the wrong order, something to do with the copying of a ushort array to a byte array messes the order up.
+            // Just flip the first and second byte to avoid wierd stuff from happening when loading.
+            tinyByteArray[0] = ba[i * 2];
+            tinyByteArray[1] = ba[i * 2 + 1];
+
+            ushort value = BitConverter.ToUInt16(tinyByteArray, 0);
+            usa[i] = value;
+        }
+
+        return usa;
     }
 }

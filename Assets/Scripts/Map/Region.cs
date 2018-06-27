@@ -4,13 +4,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
+[RequireComponent(typeof(PoolableObject))]
 public class Region : MonoBehaviour
 {
     // Is a part of a tile map, has its own texture.
-
     public const int PIXELS_PER_UNIT = 32;
     public const int CHUNK_SIZE = 16;
+    public static int SQR_CHUNK_SIZE
+    {
+        get
+        {
+            return CHUNK_SIZE * CHUNK_SIZE;
+        }
+    }
+
     public int X, Y;
+    public int Index = -1;
 
     public bool Dirty
     {
@@ -28,6 +37,7 @@ public class Region : MonoBehaviour
     private bool _dirty;
 
     public MeshRenderer Renderer;
+    public PoolableObject PoolableObject;
 
     [NonSerialized]
     private Texture2D texture;
@@ -43,14 +53,15 @@ public class Region : MonoBehaviour
         {
             Apply();
         }
-
-        // TEST - REMOVEME!
-        MapIO.Update();
     }
 
     public void UponSpawn()
     {
         Dirty = false;
+        Index = -1;
+        X = 0;
+        Y = 0;
+
         SetupMesh();
 
         if (texture == null)
@@ -76,13 +87,6 @@ public class Region : MonoBehaviour
 
         // Now ensure that it is applied to the material.
         SetRendererTexture();
-
-        // Test tiles.
-        var tile = TileData.Get(0);
-
-        SetTilePixels(0, 0, tile.GetPixels(0));
-        SetTilePixels(1, 1, tile.GetPixels(2));
-        SetTilePixels(2, 1, tile.GetPixels(8));
     }
 
     public void UponDespawn()

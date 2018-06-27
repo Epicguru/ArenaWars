@@ -6,12 +6,34 @@ using UnityEngine;
 public static class GameIO
 {
     private static string PersistentDataPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+    private static JsonSerializerSettings jss;
 
     public static string DataDirectory
     {
         get
         {
             return Path.Combine(PersistentDataPath, "My Games", "Arena Wars");
+        }
+    }
+    public static string StreamedDataDirectory
+    {
+        get
+        {
+            return Application.streamingAssetsPath;
+        }
+    }
+    public static string ZippedMapsDirectory
+    {
+        get
+        {
+            return Path.Combine(StreamedDataDirectory, "Map Data");
+        }
+    }
+    public static string UnzippedMapsDirectory
+    {
+        get
+        {
+            return Path.Combine(DataDirectory, "Map Data");
         }
     }
     public static string DefaultInputPath
@@ -34,13 +56,33 @@ public static class GameIO
         return Path.Combine(Application.dataPath, "Resources", internalPath);
     }
 
-    public static void ObjectToFile(object o, string path)
+    public static string ObjectToJson(object o, Formatting formatting, bool unitySafe = true)
+    {
+        if (o == null)
+            return null;
+
+        if(jss == null)
+            jss = new JsonSerializerSettings();
+
+        jss.Formatting = formatting;
+        if (unitySafe && jss.ContractResolver == null)
+            jss.ContractResolver = new UnityContractResolver();
+        else if (!unitySafe)
+            jss.ContractResolver = null;
+
+        // Make json from the object.
+        string json = JsonConvert.SerializeObject(o, jss);
+
+        return json;
+    }
+
+    public static void ObjectToFile(object o, string path, Formatting formatting = Formatting.Indented, bool unitySafe = true)
     {
         // Make the containing directory.
         EnsureDirectory(DirectoryFromFile(path));
 
         // Make json from the object.
-        string json = JsonConvert.SerializeObject(o, Formatting.Indented);
+        string json = ObjectToJson(o, formatting, unitySafe);
 
         // Write the json to file.
         File.WriteAllText(path, json);
