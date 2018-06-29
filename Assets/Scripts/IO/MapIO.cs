@@ -105,7 +105,7 @@ public static class MapIO
         }
     }
 
-    public static void WriteValues(FileStream fs, ushort[] values)
+    public static void WriteTileIDs(FileStream fs, ushort[] values)
     {
         if(fs == null)
         {
@@ -128,7 +128,32 @@ public static class MapIO
         // Copy (and also convert) the ushort array into the byte array.
         Buffer.BlockCopy(values, 0, bytes, 0, bytes.Length);
 
-        fs.Write(bytes, 0, bytes.Length);
+        WriteBytes(fs, bytes);
+    }
+
+    public static void WriteTileVariations(FileStream fs, byte[] values)
+    {
+        WriteBytes(fs, values);
+    }
+
+    private static void WriteBytes(FileStream fs, byte[] values)
+    {
+        if (fs == null)
+        {
+            Debug.LogError("Null file stream!");
+            return;
+        }
+        if (!fs.CanWrite)
+        {
+            Debug.LogError("File stream cannot write!");
+            return;
+        }
+        if (values == null || values.Length == 0)
+        {
+            Debug.LogError("Null or empty ushort array! Will not write!");
+        }
+
+        fs.Write(values, 0, values.Length);
     }
 
     public static FileStream StartRead(string path)
@@ -152,15 +177,15 @@ public static class MapIO
         }
     }
 
-    public static ushort[] ReadRegion(FileStream fs, int regionIndex)
+    public static ushort[] ReadRegionIDs(FileStream fs, int regionIndex)
     {
         if(byteArray == null)
         {
-            byteArray = new byte[Region.CHUNK_SIZE * Region.CHUNK_SIZE * 2];
+            byteArray = new byte[Region.SIZE * Region.SIZE * 2];
         }
         if(ushortArray == null)
         {
-            ushortArray = new ushort[Region.CHUNK_SIZE * Region.CHUNK_SIZE];
+            ushortArray = new ushort[Region.SIZE * Region.SIZE];
         }
 
         int size = byteArray.Length;
@@ -187,9 +212,9 @@ public static class MapIO
         return ushortArray;
     }
 
-    public static ushort[] ReadAll(FileStream fs, int totalRegions)
+    public static ushort[] ReadAllTileIDs(FileStream fs, int totalRegions)
     {
-        int tileCount = totalRegions * Region.CHUNK_SIZE * Region.CHUNK_SIZE;
+        int tileCount = totalRegions * Region.SIZE * Region.SIZE;
         var ba = new byte[tileCount * 2];
 
         int size = ba.Length;
@@ -214,5 +239,27 @@ public static class MapIO
         }
 
         return usa;
+    }
+
+    public static byte[] ReadAllTileVariations(FileStream fs, int totalRegions)
+    {
+        int totalTiles = Region.SQR_SIZE * totalRegions;
+
+        if(fs == null)
+        {
+            Debug.LogError("File stream is null, cannot read variations.");
+            return null;
+        }
+
+        var ba = new byte[totalTiles];
+        int read = fs.Read(ba, 0, ba.Length);
+
+        if(read != ba.Length)
+        {
+            Debug.LogError("Read {0} bytes instead of the expected {1} bytes when reading all tile variations.".Form(read, ba.Length));
+            return ba;
+        }
+
+        return ba;
     }
 }

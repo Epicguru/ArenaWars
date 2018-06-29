@@ -9,14 +9,11 @@ public class Region : MonoBehaviour
 {
     // Is a part of a tile map, has its own texture.
     public const int PIXELS_PER_UNIT = 32;
-    public const int CHUNK_SIZE = 16;
-    public static int SQR_CHUNK_SIZE
-    {
-        get
-        {
-            return CHUNK_SIZE * CHUNK_SIZE;
-        }
-    }
+    public const int SIZE = 16;
+    public const int SQR_SIZE = SIZE * SIZE;
+    public const int SQR_PIXELS_PER_UNIT = PIXELS_PER_UNIT * PIXELS_PER_UNIT;
+
+    public static Color32[] BLANK_TILE = new Color32[SQR_PIXELS_PER_UNIT];
 
     public int X, Y;
     public int Index = -1;
@@ -44,7 +41,7 @@ public class Region : MonoBehaviour
 
     public Vector2Int GetRequiredTextureSize()
     {
-        return new Vector2Int(CHUNK_SIZE * PIXELS_PER_UNIT, CHUNK_SIZE * PIXELS_PER_UNIT);
+        return new Vector2Int(SIZE * PIXELS_PER_UNIT, SIZE * PIXELS_PER_UNIT);
     }
 
     public void Update()
@@ -68,8 +65,6 @@ public class Region : MonoBehaviour
         {
             var size = GetRequiredTextureSize();
             texture = new Texture2D(size.x, size.y, TextureFormat.RGBA32, true, true);
-
-            // TODO load in required stuff...
         }
         else
         {
@@ -78,12 +73,11 @@ public class Region : MonoBehaviour
             {
                 texture.Resize(size.x, size.y);
             }
-
-            // TODO load in required stuff.
         }
 
         // Filter mode
         texture.filterMode = FilterMode.Bilinear;
+        texture.wrapMode = TextureWrapMode.Clamp;
 
         // Now ensure that it is applied to the material.
         SetRendererTexture();
@@ -101,37 +95,31 @@ public class Region : MonoBehaviour
 
     public bool InRegionBounds(int x, int y)
     {
-        return x >= 0 && x < CHUNK_SIZE && y >= 0 && y < CHUNK_SIZE;
+        return x >= 0 && x < SIZE && y >= 0 && y < SIZE;
     }
 
     public void SetTilePixels(int x, int y, Color32[] pixels)
     {
-        if(!InRegionBounds(x, y))
+        if (!InRegionBounds(x, y))
         {
             Debug.LogError("The tile position ({0}, {1}) is out of region bounds. [{2}]".Form(x, y, this.ToString()));
             return;
         }
 
-        if(texture == null)
+        if (texture == null)
         {
             Debug.LogError("The region texture is null, perhaps it has not be spawned? Cannot draw colours.");
             return;
         }
 
-        if(pixels == null)
-        {
-            Debug.LogError("Cannot draw null pixel array to the region texture!");
-            return;
-        }
-
         const int TOTAL = PIXELS_PER_UNIT * PIXELS_PER_UNIT;
-        if(pixels.Length != TOTAL)
+        if (pixels != null && pixels.Length != TOTAL)
         {
             Debug.LogError("The amount of pixels supplied ({0}) does not meet the requirement of exactly {1} pixels.".Form(pixels.Length, TOTAL));
             return;
         }
 
-        texture.SetPixels32(x * PIXELS_PER_UNIT, y * PIXELS_PER_UNIT, PIXELS_PER_UNIT, PIXELS_PER_UNIT, pixels);
+        texture.SetPixels32(x * PIXELS_PER_UNIT, y * PIXELS_PER_UNIT, PIXELS_PER_UNIT, PIXELS_PER_UNIT, pixels == null ? BLANK_TILE : pixels);
 
         Dirty = true;
     }
@@ -151,6 +139,8 @@ public class Region : MonoBehaviour
 
         SetRendererTexture();
         texture.Apply();
+
+        Dirty = false;
     }
 
     private void SetRendererTexture()
@@ -169,8 +159,8 @@ public class Region : MonoBehaviour
 
     private void SetupMesh()
     {
-        Renderer.transform.localPosition = new Vector2(CHUNK_SIZE / 2f, CHUNK_SIZE / 2f);
-        Renderer.transform.localScale = new Vector2(CHUNK_SIZE, CHUNK_SIZE);
+        Renderer.transform.localPosition = new Vector2(SIZE / 2f, SIZE / 2f);
+        Renderer.transform.localScale = new Vector2(SIZE, SIZE);
     }
 
     public override string ToString()

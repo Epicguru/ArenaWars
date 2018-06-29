@@ -5,7 +5,8 @@ using UnityEngine;
 public class TileMap : MonoBehaviour
 {
     public const string METADATA_FILE = "Data.txt";
-    public const string TILE_DATA_FILE = "Tile Data.txt";
+    public const string TILE_DATA_FILE = "Tile IDs.txt";
+    public const string TILE_VARIATION_FILE = "Tile Variations.txt";
 
     public Transform RegionParent;
     public PoolableObject RegionPrefab;
@@ -15,7 +16,9 @@ public class TileMap : MonoBehaviour
     // Represents a loaded verison of a tile map, which can be played in.
     public TileMapData Data;
     [System.NonSerialized]
-    public ushort[] MapData;
+    public ushort[] TileIDs;
+    [System.NonSerialized]
+    public byte[] TileVariations;
 
     public string MapNameTemp = "Dev_0";
 
@@ -23,28 +26,28 @@ public class TileMap : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.H))
         {
-            MapData = new ushort[Data.SizeInTiles];
+            TileIDs = new ushort[Data.SizeInTiles];
+            TileVariations = new byte[Data.SizeInTiles];
         }
 
         if (Input.GetKeyDown(KeyCode.K))
         {
             if (!Input.GetKey(KeyCode.LeftShift))
             {
-                // Load 4 regions.
-                LoadRegion(GetRegionIndex(0, 0));
-                LoadRegion(GetRegionIndex(1, 0));
-                LoadRegion(GetRegionIndex(0, 1));
-                LoadRegion(GetRegionIndex(1, 1));
+                // Load all regions...
+                for (int i = 0; i < Data.SizeInRegions; i++)
+                {
+                    LoadRegion(i);
+                }
             }
             else
             {
-                // Unload all 4 regions.
-                UnloadRegion(GetRegionIndex(0, 0));
-                UnloadRegion(GetRegionIndex(1, 0));
-                UnloadRegion(GetRegionIndex(0, 1));
-                UnloadRegion(GetRegionIndex(1, 1));
+                // Unload all regions...
+                for (int i = 0; i < Data.SizeInRegions; i++)
+                {
+                    UnloadRegion(i);
+                }
             }
-
         }
 
         if (Input.GetKeyDown(KeyCode.L))
@@ -58,28 +61,69 @@ public class TileMap : MonoBehaviour
         }
 
         Vector2Int mouseCoords = new Vector2Int((int)InputManager.MousePos.x, (int)InputManager.MousePos.y);
-        var rc = GetRegionCoords(mouseCoords.x, mouseCoords.y);
-        int ri = GetRegionIndex(rc.x, rc.y);
-        Vector2Int regionStart = new Vector2Int(rc.x * Region.CHUNK_SIZE, rc.y * Region.CHUNK_SIZE);
-        var regionOffset = mouseCoords - regionStart;
-        int offset = Region.SQR_CHUNK_SIZE * ri;
-        int subOff = regionOffset.x + regionOffset.y * Region.CHUNK_SIZE;
-        int index = offset + subOff;
 
-        if (Input.GetMouseButtonDown(0))
+        if (this.TileInBounds(mouseCoords.x, mouseCoords.y))
         {
-            MapData[index] = 1;
-            GetSpawnedRegion(ri).SetTilePixels(regionOffset.x, regionOffset.y, TileData.Get(1).GetPixels(0));
+            int tileIndex = GetTileIndex(mouseCoords.x, mouseCoords.y);
+            int tx = mouseCoords.x;
+            int ty = mouseCoords.y;
+
+            bool updated = false;
+            if (Input.GetMouseButton(0))
+            {
+                TileIDs[tileIndex] = 1;
+                updated = true;
+            }
+            if (Input.GetMouseButton(1))
+            {
+                TileIDs[tileIndex] = 0;
+                updated = true;
+            }
+
+            if (updated)
+            {
+                TileVarResolver.UpdateChangedVariations(mouseCoords.x, mouseCoords.y, this);
+
+                // Center tile
+                DrawTile(tx, ty);
+
+                // Surrounding tiles.
+                DrawTile(tx - 1, ty);
+                DrawTile(tx + 1, ty);
+                DrawTile(tx, ty - 1);
+                DrawTile(tx, ty + 1);
+            }
         }
-        if (Input.GetMouseButtonDown(1))
+    }
+
+    public void DrawTile(int tileX, int tileY)
+    {        
+        if(TileInBounds(tileX, tileY))
         {
-            MapData[index] = 0;
+            int ri = GetRegionIndex(tileX / Region.SIZE, tileY / Region.SIZE);
+            if (IsRegionSpawned(ri))
+            {
+                var r = GetSpawnedRegion(ri);
+                int ox = tileX - (r.X * Region.SIZE);
+                int oy = tileY - (r.Y * Region.SIZE);
+                int ti = GetTileIndex(tileX, tileY);
+                var tileID = TileIDs[ti];
+
+                if (tileID != 0)
+                {
+                    r.SetTilePixels(ox, oy, TileData.Get(tileID).GetPixels(TileVariations[ti]));
+                }
+                else
+                {
+                    r.SetTilePixels(ox, oy, null);
+                }
+            }
         }
     }
 
     public Vector2Int GetRegionCoords(int tileX, int tileY)
     {
-        return new Vector2Int(tileX / Region.CHUNK_SIZE, tileY / Region.CHUNK_SIZE);
+        return new Vector2Int(tileX / Region.SIZE, tileY / Region.SIZE);
     }
 
     public void LoadRegion(int regionIndex)
@@ -101,8 +145,9 @@ public class TileMap : MonoBehaviour
             r.X = coords.x;
             r.Y = coords.y;
             r.Index = regionIndex;
-            r.transform.position = new Vector2(r.X, r.Y) * Region.CHUNK_SIZE;
-            SetAllRegionPixels(r);
+            r.transform.position = new Vector2(r.X, r.Y) * Region.SIZE;
+
+            DrawWholeRegion(r);
         }
     }
 
@@ -151,7 +196,7 @@ public class TileMap : MonoBehaviour
 
     public Vector2Int GetRegionCoords(int regionIndex)
     {
-        return new Vector2Int(regionIndex % Data.WidthInChunks, regionIndex / Data.HeightInChunks);
+        return new Vector2Int(regionIndex % Data.WidthInRegions, regionIndex / Data.HeightInRegions);
     }
 
     public bool IsRegionSpawned(int regionIndex)
@@ -166,10 +211,10 @@ public class TileMap : MonoBehaviour
 
     public int GetRegionIndex(int regionX, int regionY)
     {
-        return regionX + regionY * Data.WidthInChunks;
+        return regionX + regionY * Data.WidthInRegions;
     }
 
-    public void SetAllRegionPixels(Region region)
+    public void DrawWholeRegion(Region region)
     {
         if(region == null)
         {
@@ -183,22 +228,17 @@ public class TileMap : MonoBehaviour
             return;
         }
 
-        int size = Region.SQR_CHUNK_SIZE;
+        int size = Region.SQR_SIZE;
         int offset = size * region.Index;
         int subOff = 0;
 
-        for (int x = 0; x < Region.CHUNK_SIZE; x++)
+        for (int x = 0; x < Region.SIZE; x++)
         {
-            for (int y = 0; y < Region.CHUNK_SIZE; y++)
+            for (int y = 0; y < Region.SIZE; y++)
             {
-                subOff = x + y * Region.CHUNK_SIZE;
-                var id = MapData[offset + subOff];
-
-                if (id == 0)
-                    continue;
-
-                // TODO How to save and load indexes?
-                region.SetTilePixels(x, y, TileData.Get(id).GetPixels(0));
+                subOff = x + y * Region.SIZE;
+                var id = TileIDs[offset + subOff];
+                region.SetTilePixels(x, y, id == 0 ? null : TileData.Get(id).GetPixels(TileVariations[offset + subOff]));
             }
         }
     }
@@ -231,11 +271,17 @@ public class TileMap : MonoBehaviour
         Debug.Log("Saving files to '{0}' ({1}) ...".Form(fileSaveDir, useTemp ? "temp" : "pers"));
         GameIO.EnsureDirectory(fileSaveDir);
         var fs = MapIO.StartWrite(Path.Combine(fileSaveDir, TILE_DATA_FILE));
-        MapIO.WriteValues(fs, MapData);
+        MapIO.WriteTileIDs(fs, TileIDs);
         MapIO.End(fs);
 
         // Save metadata.
         GameIO.ObjectToFile(this.Data, Path.Combine(fileSaveDir, METADATA_FILE));
+
+        // Work out all the tile varieties.
+        // TODO
+        fs = MapIO.StartWrite(Path.Combine(fileSaveDir, TILE_VARIATION_FILE));
+        MapIO.WriteTileVariations(fs, this.TileVariations);
+        MapIO.End(fs);
 
         // Grab all the saved files, and zip the up into the save zip path.
         MapIO.Zip(fileSaveDir, zipFilePath);
@@ -321,14 +367,21 @@ public class TileMap : MonoBehaviour
 
         // Now the extracted version should exist.
 
-        // Load map data...
+        // Load map metadata...
         this.Data = GameIO.FileToObject<TileMapData>(Path.Combine(destinationUnzippedDirectory, METADATA_FILE));
 
-        // Load map data.
+        // Load map tile ID data.
         string dataFile = Path.Combine(destinationUnzippedDirectory, TILE_DATA_FILE);
         var fs = MapIO.StartRead(dataFile);
-        var data = MapIO.ReadAll(fs, this.Data.WidthInChunks * this.Data.HeightInChunks);
-        this.MapData = data;
+        var data = MapIO.ReadAllTileIDs(fs, this.Data.SizeInRegions);
+        this.TileIDs = data;
+        MapIO.End(fs);
+
+        // Load map tile variations...
+        string variationFile = Path.Combine(destinationUnzippedDirectory, TILE_VARIATION_FILE);
+        fs = MapIO.StartRead(variationFile);
+        var varData = MapIO.ReadAllTileVariations(fs, this.Data.SizeInRegions);
+        this.TileVariations = varData;
         MapIO.End(fs);
 
         // Done!
@@ -336,8 +389,45 @@ public class TileMap : MonoBehaviour
         Debug.Log("Done loading map '{0}' in {1} seconds.".Form(mapInternalName, sw.Elapsed.TotalSeconds.ToString("N2")));
     }
 
+    public int GetTileIndex(int x, int y)
+    {
+        int rcx = x / Region.SIZE;
+        int rcy = y / Region.SIZE;
+        int ri = rcx + rcy * Data.WidthInRegions * Region.SIZE;
+        int rsx = rcx * Region.SIZE;
+        int rsy = rcy * Region.SIZE;
+        int rox = x - rsx;
+        int roy = y - rsy;
+        int offset = Region.SQR_SIZE * ri;
+        int subOff = rox + roy * Region.SIZE;
+        return offset + subOff;
+    }
+
+    public bool RegionInBounds(int rx, int ry)
+    {
+        if (rx < 0 || rx >= Data.WidthInRegions || ry < 0 || ry >= Data.HeightInRegions)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public bool TileInBounds(int tx, int ty)
+    {
+        if (tx < 0 || tx >= Data.WidthInTiles || ty < 0 || ty >= Data.HeightInTiles)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public bool IsLoaded()
+    {
+        return Data != null;
+    }
+
     public override string ToString()
     {
         return "Tile Map " + (Data == null ? "INVALID" : "- " + Data.InternalName);
-    }
+    } 
 }

@@ -473,11 +473,12 @@ MonoBehaviour:
   RegionPrefab: {fileID: 114455015232914224, guid: 1d99d7baadaf48542914984ce3fa370d,
     type: 2}
   Data:
-    DisplayName: Dev Map 0
-    InternalName: Dev_0
-    Description: It's a map that you can play in.
-    SizeInChunks: {x: 2, y: 2}
-  MapNameTemp: Dev_0
+    DisplayName: Dev Map 1
+    InternalName: Dev_1
+    Description: It's huge. Thats about it.
+    WidthInRegions: 40
+    HeightInRegions: 40
+  MapNameTemp: Dev_1
 --- !u!1 &950752485
 GameObject:
   m_ObjectHideFlags: 0
@@ -584,6 +585,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1081602108}
   - component: {fileID: 1081602107}
+  - component: {fileID: 1081602110}
   - component: {fileID: 1081602106}
   - component: {fileID: 1081602109}
   m_Layer: 0
@@ -708,6 +710,24 @@ MonoBehaviour:
   m_BeforeTransparentBundles: []
   m_BeforeStackBundles: []
   m_AfterStackBundles: []
+--- !u!114 &1081602110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1081602105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b95d36728b4944149b48e003e4d12853, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Cam: {fileID: 1081602107}
+  Bounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
 --- !u!1 &1276190583
 GameObject:
   m_ObjectHideFlags: 0
@@ -897,7 +917,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 114645360947857928, guid: f9c074531ee880142bb1b87be65d1c39, type: 2}
-  Region: {fileID: 114455015232914224, guid: 1d99d7baadaf48542914984ce3fa370d, type: 2}
 --- !u!1 &2091886085
 GameObject:
   m_ObjectHideFlags: 0

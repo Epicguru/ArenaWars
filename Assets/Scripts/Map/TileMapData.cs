@@ -8,13 +8,37 @@ public class TileMapData
     public string DisplayName = "Default Name";
     public string InternalName = "Default_Name";
     public string Description = "It's a map that you can play in.";
-    public int WidthInChunks = 2, HeightInChunks = 2;
+    public int WidthInRegions = 2, HeightInRegions = 2;
+
+    public int WidthInTiles
+    {
+        get
+        {
+            return WidthInRegions * Region.SIZE;
+        }
+    }
+
+    public int HeightInTiles
+    {
+        get
+        {
+            return HeightInRegions * Region.SIZE;
+        }
+    }
+
+    public int SizeInRegions
+    {
+        get
+        {
+            return WidthInRegions * HeightInRegions;
+        }
+    }
 
     public int SizeInTiles
     {
         get
         {
-            return WidthInChunks * HeightInChunks * Region.SQR_CHUNK_SIZE;
+            return SizeInRegions * Region.SQR_SIZE;
         }
     }
 
