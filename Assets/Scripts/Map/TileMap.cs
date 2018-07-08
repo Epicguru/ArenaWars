@@ -322,7 +322,7 @@ public class TileMap : MonoBehaviour
             Directory.Delete(fileSaveDir, true);
         }
 
-        Debug.Log("Finished saving, zipped to '{0}'".Form(zipFilePath));
+        Debug.Log("Finished saving, zipped to '{0}'".Form(zipFilePath));        
     }
 
     public void Load(string mapInternalName, bool forceExtract)
@@ -404,6 +404,7 @@ public class TileMap : MonoBehaviour
         string dataFile = Path.Combine(destinationUnzippedDirectory, TILE_DATA_FILE);
         var fs = MapIO.StartRead(dataFile);
         var data = MapIO.ReadAllTileIDs(fs, this.Data.SizeInRegions);
+        this.TileIDs = null;
         this.TileIDs = data;
         MapIO.End(fs);
 
@@ -411,8 +412,13 @@ public class TileMap : MonoBehaviour
         string variationFile = Path.Combine(destinationUnzippedDirectory, TILE_VARIATION_FILE);
         fs = MapIO.StartRead(variationFile);
         var varData = MapIO.ReadAllTileVariations(fs, this.Data.SizeInRegions);
+        this.TileVariations = null;
         this.TileVariations = varData;
         MapIO.End(fs);
+
+        // Run GC
+        Debug.Log("Running GC...");
+        Memory.GC();
 
         // Done!
         sw.Stop();

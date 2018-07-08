@@ -15,6 +15,20 @@ public class Pool : MonoBehaviour
     public bool Drain = false;
     public float TimeBeforeDrain = 10f;
 
+    [Header("Debug")]
+    [ReadOnly]
+    public int CurrentlyPooled;
+    [ReadOnly]
+    public int BorrowedPerFrame;
+    [ReadOnly]
+    public int SpawnedPerFrame;
+
+    private const string POOLED = "PoolTotal";
+    private const string BORROWED = "PoolBorrowed";
+    private const string SPAWNED = "PoolSpawned";
+
+    private float timer;
+
     public void Awake()
     {
         if(Instance == null)
@@ -25,6 +39,10 @@ public class Pool : MonoBehaviour
         {
             Destroy(this);
         }
+
+        DebugView.CreateGraph(POOLED, "Pooled Objects", "Seconds Ago", "Object Count", 120);
+        DebugView.CreateGraph(SPAWNED, "Pool Spawned Objects", "Frames Ago", "Spawn Count", 1000).MinAutoScale = 20;
+        DebugView.CreateGraph(BORROWED, "Pool Borrowed Objects", "Frames Ago", "Borrow Count", 1000).MinAutoScale = 20;
     }
 
     public void OnDestroy()
@@ -47,7 +65,6 @@ public class Pool : MonoBehaviour
             if(drain[id] >= TimeBeforeDrain)
             {
                 bin.Add(id);
-                Debug.Log("Binning {0}!".Form(id));
             }
         }
 
@@ -73,6 +90,40 @@ public class Pool : MonoBehaviour
         }
 
         bin.Clear();
+    }
+
+    private void LateUpdate()
+    {
+        bool fire = false;
+        timer += Time.unscaledDeltaTime;
+        if (timer >= 1f)
+        {
+            timer -= 1f;
+            fire = true;
+        }
+
+        if (fire)
+        {
+            CurrentlyPooled = 0;
+            foreach (var pair in pool)
+            {
+                CurrentlyPooled += pair.Value.Count;
+            }
+        }
+
+        if (DebugView.IsEnabled)
+        {
+            DebugView.AddGraphSample(SPAWNED, SpawnedPerFrame);
+            DebugView.AddGraphSample(BORROWED, BorrowedPerFrame);            
+
+            if (fire)
+            {
+                DebugView.AddGraphSample(POOLED, CurrentlyPooled);
+            }            
+        }
+
+        BorrowedPerFrame = 0;
+        SpawnedPerFrame = 0;
     }
 
     private static void Ensure(int id)
@@ -210,6 +261,10 @@ public class Pool : MonoBehaviour
             if(fromPool != null)
             {
                 fromPool.Spawn(position, rotation, parent);
+
+                // Debug stats
+                Instance.BorrowedPerFrame++;
+
                 return fromPool.gameObject;
             }
         }
@@ -222,11 +277,14 @@ public class Pool : MonoBehaviour
         else
         {
             Instance.drain.Add(id, 0f);
-        }
+        }        
 
         var created = CreateNew(prefab);
         if(created != null)
         {
+            // Debug stats
+            Instance.SpawnedPerFrame++;
+
             created.Spawn(position, rotation, parent);
             return created.gameObject;
         }

@@ -23,6 +23,9 @@ public class UI_Graph : MonoBehaviour
     public Color VerticalDividorColour = new Color(0f, 1f, 0f, 0.4f);
     public Color HorizontalDividorColour = new Color(0f, 1f, 0f, 0.4f);
 
+    [Header("Background")]
+    public Color BackgroundColour = Color.white;
+
     [Header("Controls")]
     [Range(2, 2000)]
     public int MaxSamples = 50;
@@ -31,6 +34,8 @@ public class UI_Graph : MonoBehaviour
     public bool SupportNegatives = false;
     [Range(0.01f, 1000f)]
     public float Scale = 10f;
+    public int AutoScaleAddition = 0;
+    public int MinAutoScale = 0;
 
     [Header("References")]
     public Text TitleText;
@@ -49,7 +54,14 @@ public class UI_Graph : MonoBehaviour
     {
         UpdateAutoSystem();
         UpdateVisuals();
-        DrawSamples();
+        DrawGraph();
+
+        while (samples.Count >= MaxSamples)
+        {
+            samples.RemoveAt(0);
+            if (samples.Count == 0)
+                break;
+        }
     }
 
     private void UpdateAutoSystem()
@@ -60,7 +72,7 @@ public class UI_Graph : MonoBehaviour
             {
                 if (samples.Count > 0)
                 {
-                    Scale = samples.Max();
+                    Scale = Mathf.Max(MinAutoScale, samples.Max() + AutoScaleAddition);
                 }
             }
             else
@@ -69,7 +81,7 @@ public class UI_Graph : MonoBehaviour
                 {
                     float max = samples.Max();
                     float min = samples.Min();
-                    Scale = Mathf.Max(Mathf.Abs(max), Mathf.Abs(min));
+                    Scale = Mathf.Max(MinAutoScale, Mathf.Max(Mathf.Abs(max), Mathf.Abs(min)) + AutoScaleAddition);
                 }
             }
         }
@@ -113,8 +125,13 @@ public class UI_Graph : MonoBehaviour
         XAxisScales[2].text = samples.Count.ToString();
     }
 
-    private void DrawSamples()
+    private void DrawGraph()
     {
+        // Background
+        Vector2 startingPos = GraphArea.position;
+        Rect size = GraphArea.rect;
+        CameraPrimitives.DrawQuad(new Rect(startingPos.x, startingPos.y, size.width, size.height), BackgroundColour);
+
         if (samples.Count < 2)
         {
             // Don't draw unless there are at least two points.
@@ -123,9 +140,7 @@ public class UI_Graph : MonoBehaviour
 
         // Draw the current samples.
         Vector2 a = new Vector2();
-        Vector2 b = new Vector2();
-        Vector2 startingPos = GraphArea.position;
-        Rect size = GraphArea.rect;
+        Vector2 b = new Vector2();        
         int total = samples.Count - 1;
         float yStart = SupportNegatives ? size.height / 2f : 0f;
 
@@ -148,17 +163,15 @@ public class UI_Graph : MonoBehaviour
             b.y = startingPos.y + ey;
 
             // Draw
-            CameraLines.DrawLine(a, b, Color.red);
-        }
+            CameraPrimitives.DrawLine(a, b, Color.red);
+        }        
     }
 
     public void AddSample(float value)
     {
-        samples.Add(value);
-        if(samples.Count > MaxSamples)
-        {
+        if (samples.Count == MaxSamples)
             samples.RemoveAt(0);
-        }
+        samples.Add(value);        
     }
 
     public void ClearSamples()

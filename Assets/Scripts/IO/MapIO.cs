@@ -238,6 +238,8 @@ public static class MapIO
             usa[i] = value;
         }
 
+        ba = null;
+
         return usa;
     }
 

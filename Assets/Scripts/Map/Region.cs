@@ -66,6 +66,7 @@ public class Region : MonoBehaviour
         if(texture != null)
         {
             texture = null;
+            Memory.UnloadUnusedAssets();
         }
     }
 

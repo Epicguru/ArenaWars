@@ -6,8 +6,6 @@ public class Scheduler : MonoBehaviour
 {
     public static Scheduler Instance;
 
-    public UI_Graph Graph;
-
     [Header("Controls")]
     public long MAX_TIME_PER_FRAME = 3L;
 
@@ -32,9 +30,21 @@ public class Scheduler : MonoBehaviour
     public Queue<ScheduledJob> Jobs = new Queue<ScheduledJob>();
     private Stopwatch sw = new Stopwatch();
 
+    private const string PROCESSED = "JobsProcessed";
+    private const string TIME = "JobsTime";
+    private const string PENDING = "JobsPending";
+
     public void Awake()
     {
         Instance = this;
+
+        DebugView.CreateGraph(PROCESSED, "Jobs Processed", "Frame", "Job Count in Frame", 1000);
+        var time = DebugView.CreateGraph(TIME, "Jobs Execution Time", "Frame", "Total Job Time in Frame", 1000);
+        if(time != null)
+        {
+            time.MinAutoScale = 10;
+        }
+        DebugView.CreateGraph(PENDING, "Pending Jobs", "Frame", "Total Pending Jobs", 1000);
     }
 
     public void OnDestroy()
@@ -105,9 +115,16 @@ public class Scheduler : MonoBehaviour
         ElapsedMillisecondsLastFrame = sw.ElapsedMilliseconds;
         Pending = Jobs.Count;
 
-        Graph.Title = "Jobs Processed Per Frame";
-        Graph.XLabel = "Elapsed Frames";
-        Graph.YLabel = "# of Jobs";
-        Graph.AddSample(ProcessedLastFrame);
+        UpdateDebugView();
+    }
+
+    private void UpdateDebugView()
+    {
+        if (!DebugView.IsEnabled)
+            return;
+
+        DebugView.AddGraphSample(PROCESSED, ProcessedLastFrame);
+        DebugView.AddGraphSample(TIME, ElapsedMillisecondsLastFrame);
+        DebugView.AddGraphSample(PENDING, Pending);
     }
 }
