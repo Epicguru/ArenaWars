@@ -7,6 +7,7 @@ public class TileMapData
 {
     public string DisplayName = "Default Name";
     public string InternalName = "Default_Name";
+    [TextArea(3, 10)]
     public string Description = "It's a map that you can play in.";
     public int WidthInRegions = 2, HeightInRegions = 2;
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Pool : MonoBehaviour
@@ -8,6 +9,11 @@ public class Pool : MonoBehaviour
 
     private Dictionary<int, Queue<PoolableObject>> pool = new Dictionary<int, Queue<PoolableObject>>();
     private Dictionary<int, GameObject> groups = new Dictionary<int, GameObject>();
+    private Dictionary<int, float> drain = new Dictionary<int, float>();
+    private List<int> bin = new List<int>();
+
+    public bool Drain = false;
+    public float TimeBeforeDrain = 10f;
 
     public void Awake()
     {
@@ -27,6 +33,46 @@ public class Pool : MonoBehaviour
         {
             Instance = null;
         }
+    }
+
+    public void Update()
+    {
+        if (!Drain)
+            return;
+
+        float dt = Time.unscaledDeltaTime;
+        foreach (var id in drain.Keys.ToArray())
+        {
+            drain[id] += dt;
+            if(drain[id] >= TimeBeforeDrain)
+            {
+                bin.Add(id);
+                Debug.Log("Binning {0}!".Form(id));
+            }
+        }
+
+        foreach (var index in bin)
+        {
+            if (pool.ContainsKey(index))
+            {
+                foreach (var go in pool[index])
+                {
+                    Destroy(go.gameObject);
+                }
+                pool.Remove(index);
+                if (groups.ContainsKey(index))
+                {
+                    Destroy(groups[index]);
+                    groups.Remove(index);
+                }
+            }
+            else
+            {
+                drain.Remove(index);
+            }
+        }
+
+        bin.Clear();
     }
 
     private static void Ensure(int id)
@@ -168,6 +214,16 @@ public class Pool : MonoBehaviour
             }
         }
 
+        // Reset the drain timer, if active.
+        if (Instance.drain.ContainsKey(id))
+        {
+            Instance.drain[id] = 0f;
+        }
+        else
+        {
+            Instance.drain.Add(id, 0f);
+        }
+
         var created = CreateNew(prefab);
         if(created != null)
         {
@@ -191,9 +247,26 @@ public class Pool : MonoBehaviour
             return;
         }
 
+        int id = instance.PrefabID;
         instance.Despawn();
 
-        int id = instance.PrefabID;
+        if (Instance.Drain)
+        {
+            if (Instance.drain.ContainsKey(id))
+            {
+                if(Instance.drain[id] >= Instance.TimeBeforeDrain)
+                {
+                    // Don't bother pooling.
+                    Destroy(instance.gameObject);
+                    return;
+                }
+            }
+            else
+            {
+                Instance.drain.Add(id, 0f);
+            }
+        }
+
         instance.gameObject.SetActive(false);
         instance.transform.SetParent(GetGroup(id).transform, !instance.IsUI);
 

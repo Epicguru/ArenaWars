@@ -7,6 +7,7 @@ public class CameraBounds : MonoBehaviour
 
     public Camera Cam;
     public Rect Bounds;
+    public RectInt RegionBounds;
 
     public void Awake()
     {
@@ -53,6 +54,22 @@ public class CameraBounds : MonoBehaviour
         Bounds.y = bottomY;
         Bounds.width = width * 2f;
         Bounds.height = height * 2f;
+
+        // Make region bounds...
+        int startX = Mathf.RoundToInt(Bounds.x);
+        int startY = Mathf.RoundToInt(Bounds.y);
+        int endX = startX + Mathf.RoundToInt(Bounds.width);
+        int endY = startY + Mathf.RoundToInt(Bounds.height);
+
+        int regionX = startX / Region.SIZE;
+        int regionY = startY / Region.SIZE;
+        int regionEndX = endX / Region.SIZE;
+        int regionEndY = endY / Region.SIZE;
+
+        RegionBounds.x = regionX;
+        RegionBounds.y = regionY;
+        RegionBounds.width = regionEndX - regionX;
+        RegionBounds.height = regionEndY - regionY;
     }
 
     public void OnDrawGizmos()

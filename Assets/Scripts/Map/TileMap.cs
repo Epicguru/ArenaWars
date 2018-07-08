@@ -11,7 +11,9 @@ public class TileMap : MonoBehaviour
     public Transform RegionParent;
     public PoolableObject RegionPrefab;
 
-    private Dictionary<int, Region> SpawnedRegions = new Dictionary<int, Region>();
+    private Dictionary<int, Region> LoadedRegions = new Dictionary<int, Region>();
+    private List<int> toLoad = new List<int>();
+    private List<int> toBin = new List<int>();
 
     // Represents a loaded verison of a tile map, which can be played in.
     public TileMapData Data;
@@ -30,39 +32,67 @@ public class TileMap : MonoBehaviour
             TileVariations = new byte[Data.SizeInTiles];
         }
 
-        if (Input.GetKeyDown(KeyCode.K))
+        if (IsLoaded())
         {
-            if (!Input.GetKey(KeyCode.LeftShift))
+            // Unload and load in around around camera and all agents.
+            var bounds = CameraBounds.Instance.RegionBounds;
+
+            toLoad.Clear();
+            toBin.Clear();
+
+            for (int x = bounds.xMin; x <= bounds.xMax; x++)
             {
-                // Load all regions...
-                for (int i = 0; i < Data.SizeInRegions; i++)
+                for (int y = bounds.yMin; y <= bounds.yMax; y++)
                 {
-                    LoadRegion(i);
+                    if(RegionInBounds(x, y))
+                    {
+                        int i = GetRegionIndex(x, y);
+                        toLoad.Add(i);
+                    }
                 }
             }
-            else
+
+            foreach (var pair in LoadedRegions)
             {
-                // Unload all regions...
-                for (int i = 0; i < Data.SizeInRegions; i++)
+                if (!toLoad.Contains(pair.Key))
                 {
-                    UnloadRegion(i);
+                    // Is not requested to load this frame, goodbye!
+                    toBin.Add(pair.Key);
+                }
+            }
+
+            foreach (var index in toBin)
+            {
+                UnloadRegion(index);
+            }
+
+            foreach (var index in toLoad)
+            {
+                if (!IsRegionLoaded(index))
+                {
+                    LoadRegion(index);
                 }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.L))
         {
+            for (int i = 0; i < Data.SizeInRegions; i++)
+            {
+                if (IsRegionLoaded(i))
+                    UnloadRegion(i);
+            }
             Load(MapNameTemp, true);
         }
 
-        if (Input.GetKeyDown(KeyCode.J))
+        if (IsLoaded() && Input.GetKeyDown(KeyCode.J))
         {
             Save(true, true);
         }
 
         Vector2Int mouseCoords = new Vector2Int((int)InputManager.MousePos.x, (int)InputManager.MousePos.y);
 
-        if (this.TileInBounds(mouseCoords.x, mouseCoords.y))
+        if (IsLoaded() && this.TileInBounds(mouseCoords.x, mouseCoords.y))
         {
             int tileIndex = GetTileIndex(mouseCoords.x, mouseCoords.y);
             int tx = mouseCoords.x;
@@ -101,7 +131,7 @@ public class TileMap : MonoBehaviour
         if(TileInBounds(tileX, tileY))
         {
             int ri = GetRegionIndex(tileX / Region.SIZE, tileY / Region.SIZE);
-            if (IsRegionSpawned(ri))
+            if (IsRegionLoaded(ri))
             {
                 var r = GetSpawnedRegion(ri);
                 int ox = tileX - (r.X * Region.SIZE);
@@ -128,7 +158,7 @@ public class TileMap : MonoBehaviour
 
     public void LoadRegion(int regionIndex)
     {
-        if (IsRegionSpawned(regionIndex))
+        if (IsRegionLoaded(regionIndex))
         {
             Debug.LogError("Region @ index {0} is already spawned, cannot load it again!".Form(regionIndex));
         }
@@ -138,7 +168,7 @@ public class TileMap : MonoBehaviour
             var r = spawned.GetComponent<Region>();
 
             // Register.
-            SpawnedRegions.Add(regionIndex, r);
+            LoadedRegions.Add(regionIndex, r);
 
             // Give it index, X, Y values.
             var coords = GetRegionCoords(regionIndex);
@@ -153,25 +183,25 @@ public class TileMap : MonoBehaviour
 
     public void UnloadRegion(int regionIndex)
     {
-        if (!IsRegionSpawned(regionIndex))
+        if (!IsRegionLoaded(regionIndex))
         {
             Debug.LogError("Region @ index {0} is not spawned, cannot unload it!".Form(regionIndex));
         }
         else
         {
-            var region = SpawnedRegions[regionIndex];
+            var region = LoadedRegions[regionIndex];
             Pool.Return(region.PoolableObject);
 
             // Unregister.
-            SpawnedRegions.Remove(regionIndex);
+            LoadedRegions.Remove(regionIndex);
         }
     }
 
     public Region GetSpawnedRegion(int regionIndex)
     {
-        if (IsRegionSpawned(regionIndex))
+        if (IsRegionLoaded(regionIndex))
         {
-            return SpawnedRegions[regionIndex];
+            return LoadedRegions[regionIndex];
         }
         else
         {
@@ -183,9 +213,9 @@ public class TileMap : MonoBehaviour
     public Region GetSpawnedRegion(int regionX, int regionY)
     {
         int regionIndex = GetRegionIndex(regionX, regionY);
-        if (IsRegionSpawned(regionIndex))
+        if (IsRegionLoaded(regionIndex))
         {
-            return SpawnedRegions[regionIndex];
+            return LoadedRegions[regionIndex];
         }
         else
         {
@@ -194,25 +224,25 @@ public class TileMap : MonoBehaviour
         }
     }
 
-    public Vector2Int GetRegionCoords(int regionIndex)
-    {
-        return new Vector2Int(regionIndex % Data.WidthInRegions, regionIndex / Data.HeightInRegions);
-    }
-
-    public bool IsRegionSpawned(int regionIndex)
-    {
-        return SpawnedRegions.ContainsKey(regionIndex);
-    }
-
-    public bool IsRegionSpawned(int regionX, int regionY)
-    {
-        return SpawnedRegions.ContainsKey(GetRegionIndex(regionX, regionY));
-    }
-
     public int GetRegionIndex(int regionX, int regionY)
     {
         return regionX + regionY * Data.WidthInRegions;
     }
+
+    public Vector2Int GetRegionCoords(int regionIndex)
+    {
+        return new Vector2Int(regionIndex % Data.WidthInRegions, regionIndex / Data.WidthInRegions);
+    }
+
+    public bool IsRegionLoaded(int regionIndex)
+    {
+        return LoadedRegions.ContainsKey(regionIndex);
+    }
+
+    public bool IsRegionSpawned(int regionX, int regionY)
+    {
+        return LoadedRegions.ContainsKey(GetRegionIndex(regionX, regionY));
+    }  
 
     public void DrawWholeRegion(Region region)
     {
@@ -391,16 +421,21 @@ public class TileMap : MonoBehaviour
 
     public int GetTileIndex(int x, int y)
     {
-        int rcx = x / Region.SIZE;
-        int rcy = y / Region.SIZE;
-        int ri = rcx + rcy * Data.WidthInRegions * Region.SIZE;
-        int rsx = rcx * Region.SIZE;
-        int rsy = rcy * Region.SIZE;
-        int rox = x - rsx;
-        int roy = y - rsy;
-        int offset = Region.SQR_SIZE * ri;
-        int subOff = rox + roy * Region.SIZE;
-        return offset + subOff;
+        int regionX = x / Region.SIZE;
+        int regionY = y / Region.SIZE;
+
+        int regionIndex = GetRegionIndex(regionX, regionY);
+        int startIndex = regionIndex * Region.SQR_SIZE;
+
+        int startX = regionX * Region.SIZE;
+        int startY = regionY * Region.SIZE;
+
+        int offX = x - startX;
+        int offY = y - startY;
+
+        int regionTileIndexOffset = offX + offY * Region.SIZE;
+
+        return startIndex + regionTileIndexOffset;
     }
 
     public bool RegionInBounds(int rx, int ry)
@@ -423,7 +458,7 @@ public class TileMap : MonoBehaviour
 
     public bool IsLoaded()
     {
-        return Data != null;
+        return Data != null && TileIDs != null;
     }
 
     public override string ToString()

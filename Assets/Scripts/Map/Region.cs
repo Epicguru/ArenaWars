@@ -35,9 +35,13 @@ public class Region : MonoBehaviour
 
     public MeshRenderer Renderer;
     public PoolableObject PoolableObject;
+    public SpriteRenderer Hider;
 
     [NonSerialized]
     private Texture2D texture;
+    private bool initialApplication;
+
+    private ScheduledJob TexJob;
 
     public Vector2Int GetRequiredTextureSize()
     {
@@ -52,12 +56,32 @@ public class Region : MonoBehaviour
         }
     }
 
+    public void OnDestroy()
+    {
+        if(TexJob != null)
+        {
+            TexJob.State = JobState.CANCELLED;
+        }
+
+        if(texture != null)
+        {
+            texture = null;
+        }
+    }
+
     public void UponSpawn()
     {
         Dirty = false;
         Index = -1;
         X = 0;
         Y = 0;
+
+        // Hide until the texture is loaded!
+        initialApplication = true;
+        Hider.gameObject.SetActive(true);
+        var c = Hider.color;
+        c.a = 1f;
+        Hider.color = c;
 
         SetupMesh();
 
@@ -83,14 +107,50 @@ public class Region : MonoBehaviour
         SetRendererTexture();
     }
 
-    public void UponDespawn()
+    private void UponTextureApplied()
     {
-        if (texture != null)
+        if (initialApplication)
         {
-            texture = null;
+            initialApplication = false;
+
+            // Remove the hider...
+            StartCoroutine(HideTheHider());
+        }
+    }
+
+    private IEnumerator HideTheHider()
+    {
+        if (!Hider.gameObject.activeSelf)
+        {
+            yield break;
         }
 
+        const int STEPS = 10;
+        const float TARGET_TIME = 0.1f;
+        for (int i = 0; i < STEPS; i++)
+        {
+            var c = Hider.color;
+            c.a -= 1f / STEPS;
+            Hider.color = c;
+            yield return new WaitForSecondsRealtime(TARGET_TIME / STEPS);
+        }
+
+        Hider.gameObject.SetActive(false);
+    }
+
+    public void UponDespawn()
+    {
         Dirty = false;
+        StopAllCoroutines();
+
+        // Cancel any pending texture job.
+        if(TexJob != null)
+        {
+            if(TexJob.State == JobState.PENDING)
+            {
+                TexJob.State = JobState.CANCELLED;
+            }
+        }
     }
 
     public bool InRegionBounds(int x, int y)
@@ -130,16 +190,30 @@ public class Region : MonoBehaviour
         {
             return;
         }
-
         if(texture == null)
         {
             Debug.LogError("Cannot apply when the texture is null!");
             return;
         }
 
-        SetRendererTexture();
-        texture.Apply();
+        if(TexJob == null)
+        {
+            TexJob = new ScheduledJob();
+        }
+        else
+        {
+            if(TexJob.State == JobState.PENDING)
+            {
+                Dirty = false;
+                return;
+            }
+        }
+        TexJob.State = JobState.IDLE;
+        TexJob.Action = texture.Apply;
+        TexJob.UponCompletion = UponTextureApplied;
 
+        SetRendererTexture();
+        Scheduler.AddJob(TexJob);
         Dirty = false;
     }
 
