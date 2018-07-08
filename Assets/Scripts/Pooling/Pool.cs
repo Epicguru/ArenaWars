@@ -254,12 +254,7 @@ public class Pool : MonoBehaviour
         {
             if (Instance.drain.ContainsKey(id))
             {
-                if(Instance.drain[id] >= Instance.TimeBeforeDrain)
-                {
-                    // Don't bother pooling.
-                    Destroy(instance.gameObject);
-                    return;
-                }
+                Instance.drain[id] = 0f;
             }
             else
             {

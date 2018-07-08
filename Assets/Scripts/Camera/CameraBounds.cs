@@ -5,6 +5,8 @@ public class CameraBounds : MonoBehaviour
 {
     public static CameraBounds Instance;
 
+    public int RegionBoundsPadding = 1;
+
     public Camera Cam;
     public Rect Bounds;
     public RectInt RegionBounds;
@@ -66,10 +68,10 @@ public class CameraBounds : MonoBehaviour
         int regionEndX = endX / Region.SIZE;
         int regionEndY = endY / Region.SIZE;
 
-        RegionBounds.x = regionX;
-        RegionBounds.y = regionY;
-        RegionBounds.width = regionEndX - regionX;
-        RegionBounds.height = regionEndY - regionY;
+        RegionBounds.x = regionX - RegionBoundsPadding;
+        RegionBounds.y = regionY - RegionBoundsPadding;
+        RegionBounds.width = regionEndX - regionX + RegionBoundsPadding * 2;
+        RegionBounds.height = regionEndY - regionY + RegionBoundsPadding * 2;
     }
 
     public void OnDrawGizmos()
