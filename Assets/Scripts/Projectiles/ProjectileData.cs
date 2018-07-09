@@ -14,6 +14,9 @@ public class ProjectileData : ScriptableObject
     [Tooltip("The minimum and maximum angle change upon a bounce. Both values must be positive.")]
     public Vector2 BounceAngleChange = new Vector2(0f, 0f);
 
+    [Tooltip("The time after which the projectile will be automatically destroyed.")]
+    public float MaxLifetime = 10f;
+
     private static Dictionary<string, ProjectileData> loaded;
 
     public static void LoadAll()

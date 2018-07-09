@@ -6,9 +6,11 @@ public class Memory : MonoBehaviour
     private static Memory instance;
 
     public float AssetUnloadDelay = 0.25f;
+    public bool GraphMemory = true;
 
     private bool unloadUA;
     private float timeToUA;
+    private const string MEMORY_USE = "MemoryUsage";
 
     public static void UnloadUnusedAssets()
     {
@@ -25,6 +27,12 @@ public class Memory : MonoBehaviour
     public void Awake()
     {
         instance = this;
+
+        if (GraphMemory)
+        {
+            DebugView.CreateGraph(MEMORY_USE, "Total Memory", "Seconds Ago", "Megabytes", 2 * 60);
+            InvokeRepeating("AddGraphSample", 1f, 1f);
+        }
     }
 
     public void Update()
@@ -40,5 +48,13 @@ public class Memory : MonoBehaviour
                 Resources.UnloadUnusedAssets();
             }
         }
+    }
+
+    private void AddGraphSample()
+    {
+        if (!GraphMemory)
+            return;
+
+        DebugView.AddGraphSample(MEMORY_USE, System.GC.GetTotalMemory(false) / 1024f / 1024f);
     }
 }

@@ -419,6 +419,7 @@ public class TileMap : MonoBehaviour
         // Run GC
         Debug.Log("Running GC...");
         Memory.GC();
+        Debug.Log("Done!");
 
         // Done!
         sw.Stop();

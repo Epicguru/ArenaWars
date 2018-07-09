@@ -24,6 +24,7 @@ public class Projectile : NetworkBehaviour
 
     private float angle;
     private int bounceCount;
+    private float lifeTimer;
 
     public void Init(Vector2 position, float angle, ProjectileData data)
     {
@@ -33,7 +34,8 @@ public class Projectile : NetworkBehaviour
 
         // Apply all data to this instance.
         this.Speed = data.Speed;
-        this.bounceCount = 0;        
+        this.bounceCount = 0;
+        lifeTimer = 0f;
     }
 
     public override void OnStartClient()
@@ -60,6 +62,13 @@ public class Projectile : NetworkBehaviour
         if(GetAngle() != finalAngle)
             SetAngle(finalAngle);
         transform.position = finalPos;
+
+        // Check lifetime
+        lifeTimer += Time.deltaTime;
+        if(lifeTimer >= Data.MaxLifetime)
+        {
+            StopAll();
+        }
     }
 
     public float GetAngle()

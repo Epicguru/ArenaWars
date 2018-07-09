@@ -9,7 +9,7 @@ public class DebugView : MonoBehaviour
     {
         get
         {
-            return false && Instance != null && (Instance.ENABLED_IN_PLAYER ? true : Application.isEditor);
+            return Instance != null && (Instance.ENABLED_IN_PLAYER ? true : Application.isEditor);
         }
     }
 

@@ -416,7 +416,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000022262335, y: 0}
+  m_AnchoredPosition: {x: -0.000018606597, y: 0}
   m_SizeDelta: {x: -1906, y: 180}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &217531306
@@ -655,6 +655,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AssetUnloadDelay: 0.25
+  GraphMemory: 1
 --- !u!1 &502772056
 GameObject:
   m_ObjectHideFlags: 0
