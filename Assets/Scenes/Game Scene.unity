@@ -1206,8 +1206,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c82ca5277f39cc4d9bcd3b3755885af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Drain: 0
-  TimeBeforeDrain: 20
+  Drain: 1
+  TimeBeforeDrain: 10
+  DrainInterval: 1
   CurrentlyPooled: 0
   BorrowedPerFrame: 0
   SpawnedPerFrame: 0

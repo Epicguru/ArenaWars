@@ -14,6 +14,7 @@ public class Pool : MonoBehaviour
 
     public bool Drain = false;
     public float TimeBeforeDrain = 10f;
+    public float DrainInterval = 1f;
 
     [Header("Debug")]
     [ReadOnly]
@@ -40,6 +41,8 @@ public class Pool : MonoBehaviour
             Destroy(this);
         }
 
+        InvokeRepeating("DrainOne", 0f, DrainInterval);
+
         DebugView.CreateGraph(POOLED, "Pooled Objects", "Seconds Ago", "Object Count", 120);
         DebugView.CreateGraph(SPAWNED, "Pool Spawned Objects", "Frames Ago", "Spawn Count", 1000).MinAutoScale = 20;
         DebugView.CreateGraph(BORROWED, "Pool Borrowed Objects", "Frames Ago", "Borrow Count", 1000).MinAutoScale = 20;
@@ -61,35 +64,8 @@ public class Pool : MonoBehaviour
         float dt = Time.unscaledDeltaTime;
         foreach (var id in drain.Keys.ToArray())
         {
-            drain[id] += dt;
-            if(drain[id] >= TimeBeforeDrain)
-            {
-                bin.Add(id);
-            }
-        }
-
-        foreach (var index in bin)
-        {
-            if (pool.ContainsKey(index))
-            {
-                foreach (var go in pool[index])
-                {
-                    Destroy(go.gameObject);
-                }
-                pool.Remove(index);
-                if (groups.ContainsKey(index))
-                {
-                    Destroy(groups[index]);
-                    groups.Remove(index);
-                }
-            }
-            else
-            {
-                drain.Remove(index);
-            }
-        }
-
-        bin.Clear();
+            drain[id] += dt;            
+        }        
     }
 
     private void LateUpdate()
@@ -124,6 +100,51 @@ public class Pool : MonoBehaviour
 
         BorrowedPerFrame = 0;
         SpawnedPerFrame = 0;
+    }
+
+    private void DrainOne()
+    {
+        if (!Drain)
+            return;
+
+        foreach (var id in drain.Keys.ToArray())
+        {
+            if (drain[id] >= TimeBeforeDrain)
+            {
+                bin.Add(id);
+            }
+        }
+        
+        foreach (var index in bin)
+        {
+            if (pool.ContainsKey(index))
+            {
+                int count = pool[index].Count;
+                if (count > 1)
+                {
+                    var obj = pool[index].Dequeue();
+                    Destroy(obj.gameObject);
+                }
+                else
+                {
+                    var obj = pool[index].Dequeue();
+                    Destroy(obj.gameObject);
+                    pool.Remove(index);
+
+                    if (groups.ContainsKey(index))
+                    {
+                        Destroy(groups[index]);
+                        groups.Remove(index);
+                    }
+                }
+            }
+            else
+            {
+                drain.Remove(index);
+            }
+        }
+
+        bin.Clear();
     }
 
     private static void Ensure(int id)
