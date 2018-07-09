@@ -55,6 +55,8 @@ public static class Pathfinding
         int count;
         while((count = open.Count) > 0)
         {
+            // Detect if the current open amount exceeds the capacity.
+            // This only happens in very large open areas. Corridors and hallways will never cause this, not matter how large the actual path length.
             if(count >= MAX)
             {
                 path = null;
@@ -70,6 +72,7 @@ public static class Pathfinding
                 return PathfindingResult.SUCCESSFUL;
             }
 
+            // Get all neighbours (tiles that can be walked on to)
             var neighbours = GetNear(current, map);
             foreach (PNode n in neighbours)
             {
@@ -79,6 +82,8 @@ public static class Pathfinding
                 {
                     costSoFar[n] = newCost;
                     float priority = newCost + Heuristic(current, n);
+                    open.Enqueue(n, priority);
+                    cameFrom[n] = current;
                 }
             }
         }
