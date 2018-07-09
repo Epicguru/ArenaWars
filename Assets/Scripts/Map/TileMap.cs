@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -124,6 +125,12 @@ public class TileMap : MonoBehaviour
                 DrawTile(tx, ty + 1);
             }
         }
+    }
+
+    public bool IsSpotWalkable(int x, int y)
+    {
+        // It's only walkable if it's 0 (air).
+        return TileInBounds(x, y) && TileIDs[GetTileIndex(x, y)] == 0;
     }
 
     public void DrawTile(int tileX, int tileY)
