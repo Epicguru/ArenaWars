@@ -22,13 +22,17 @@ public class Pathfinding
     {
         if(map == null)
         {
-            Debug.LogError("Null map, cannot pathfind.");
+            path = null;
+            return PathfindingResult.ERROR_INTERNAL;
+        }
+        if (!map.IsLoaded())
+        {
             path = null;
             return PathfindingResult.ERROR_INTERNAL;
         }
 
         // Validate start and end points.
-        if(!map.TileInBounds(startX, startY))
+        if (!map.TileInBounds(startX, startY))
         {
             path = null;
             return PathfindingResult.ERROR_START_OUT_OF_BOUNDS;
@@ -37,6 +41,16 @@ public class Pathfinding
         {
             path = null;
             return PathfindingResult.ERROR_END_OUT_OF_BOUNDS;
+        }
+        if(!map.IsSpotWalkable(startX, startY))
+        {
+            path = null;
+            return PathfindingResult.ERROR_START_NOT_WALKABLE;
+        }
+        if (!map.IsSpotWalkable(endX, endY))
+        {
+            path = null;
+            return PathfindingResult.ERROR_END_NOT_WALKABLE;
         }
 
         // Clear everything up.
