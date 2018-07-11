@@ -119,23 +119,14 @@ public class Pool : MonoBehaviour
         {
             if (pool.ContainsKey(index))
             {
-                int count = pool[index].Count;
-                if (count > 1)
+                if(pool[index].Count > 0)
                 {
                     var obj = pool[index].Dequeue();
                     Destroy(obj.gameObject);
                 }
                 else
                 {
-                    var obj = pool[index].Dequeue();
-                    Destroy(obj.gameObject);
-                    pool.Remove(index);
-
-                    if (groups.ContainsKey(index))
-                    {
-                        Destroy(groups[index]);
-                        groups.Remove(index);
-                    }
+                    drain.Remove(index);
                 }
             }
             else

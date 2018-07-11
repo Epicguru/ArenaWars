@@ -6,16 +6,18 @@ using UnityEngine.Events;
 public class PathRequest
 {
     public static List<PathRequest> Pending = new List<PathRequest>();
-    private static Queue<PathRequest> idlePool = new Queue<PathRequest>();
+    public static Queue<PathRequest> IdlePool = new Queue<PathRequest>();
 
     public int StartX { get; private set; }
     public int StartY { get; private set; }
+    public int EndX { get; private set; }
+    public int EndY { get; private set; }
 
     public PathRequestState State { get; private set; }
 
     public UnityAction<PathfindingResult, List<PNode>> UponProcessed { get; private set; }
 
-    public static PathRequest Create(int startX, int startY, UnityAction<PathfindingResult, List<PNode>> uponProcessed)
+    public static PathRequest Create(int startX, int startY, int endX, int endY, UnityAction<PathfindingResult, List<PNode>> uponProcessed)
     {
         if(uponProcessed == null)
         {
@@ -23,26 +25,31 @@ public class PathRequest
             return null;
         }
 
-        if(idlePool.Count > 0)
+        if(IdlePool.Count > 0)
         {
-            var got = idlePool.Dequeue();
-
-            got.StartX = startX;
-            got.StartY = startY;
-            got.UponProcessed = uponProcessed;
-            got.State = PathRequestState.REQUESTED;
-
-            if (!Pending.Contains(got))
+            lock (PathThreader.LOK_2)
             {
-                Pending.Add(got);
-            }
-            else
-            {
-                Debug.LogError("A request object in the idle queue also existed in the pending queue! How and why?");
-                return null;
-            }
+                var got = IdlePool.Dequeue();
 
-            return got;
+                got.StartX = startX;
+                got.StartY = startY;
+                got.EndX = endX;
+                got.EndY = endY;
+                got.UponProcessed = uponProcessed;
+                got.State = PathRequestState.REQUESTED;
+
+                if (!Pending.Contains(got))
+                {
+                    Pending.Add(got);
+                }
+                else
+                {
+                    Debug.LogError("A request object in the idle queue also existed in the pending queue! How and why?");
+                    return null;
+                }
+
+                return got;
+            }
         }
         else
         {
@@ -50,6 +57,8 @@ public class PathRequest
 
             got.StartX = startX;
             got.StartY = startY;
+            got.EndX = endX;
+            got.EndY = endY;
             got.UponProcessed = uponProcessed;
             got.State = PathRequestState.REQUESTED;
 
@@ -71,13 +80,38 @@ public class PathRequest
     public void Cancel()
     {
         // Add it back into the idle pool.
-        if (idlePool.Contains(this))
+        if (IdlePool.Contains(this))
         {
             Debug.LogError("This pathfinding request has already been cancelled, or was never started.");
             return;
         }
 
-        idlePool.Enqueue(this);
+        lock (PathThreader.LOK)
+        {
+            // Remove from the pending list.
+            Pending.Remove(this);
+
+            // Also set the UponProcessed to null to avoid it being called if this is current processing. A waste, but oh well.
+            UponProcessed = null;
+        }
+
+        IdlePool.Enqueue(this);
+        State = PathRequestState.IDLE;        
+    }
+
+    /// <summary>
+    /// Internal method. Do not call.
+    /// </summary>
+    public void FlagWorking()
+    {
+        State = PathRequestState.PROCESSING;
+    }
+
+    /// <summary>
+    /// Internal method. Do not call.
+    /// </summary>
+    public void FlagIdle()
+    {
         State = PathRequestState.IDLE;
     }
 }

@@ -1,5 +1,6 @@
 ﻿
 using Priority_Queue;
+using UnityEngine;
 
 public class PNode : FastPriorityQueueNode
 {
@@ -15,6 +16,11 @@ public class PNode : FastPriorityQueueNode
     {
         X = x;
         Y = y;
+    }
+
+    public static implicit operator Vector2(PNode pn)
+    {
+        return new Vector2(pn.X, pn.Y);
     }
 
     public override bool Equals(object obj)

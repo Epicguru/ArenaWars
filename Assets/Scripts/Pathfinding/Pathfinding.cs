@@ -2,18 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class Pathfinding
+public class Pathfinding
 {
     public const int MAX = 1000;
     private const float DIAGONAL_DST = 1.41421356237f;
 
-    private static FastPriorityQueue<PNode> open = new FastPriorityQueue<PNode>(MAX);
-    private static Dictionary<PNode, PNode> cameFrom = new Dictionary<PNode, PNode>();
-    private static Dictionary<PNode, float> costSoFar = new Dictionary<PNode, float>();
-    private static List<PNode> near = new List<PNode>();
-    private static bool left, right, below, above;
+    private FastPriorityQueue<PNode> open = new FastPriorityQueue<PNode>(MAX);
+    private Dictionary<PNode, PNode> cameFrom = new Dictionary<PNode, PNode>();
+    private Dictionary<PNode, float> costSoFar = new Dictionary<PNode, float>();
+    private List<PNode> near = new List<PNode>();
+    private bool left, right, below, above;
 
-    public static PathfindingResult Run(int startX, int startY, int endX, int endY, TileMap map, out List<PNode> path)
+    public Pathfinding()
+    {
+
+    }
+
+    public PathfindingResult Run(int startX, int startY, int endX, int endY, TileMap map, out List<PNode> path)
     {
         if(map == null)
         {
@@ -57,7 +62,7 @@ public static class Pathfinding
         {
             // Detect if the current open amount exceeds the capacity.
             // This only happens in very large open areas. Corridors and hallways will never cause this, not matter how large the actual path length.
-            if(count >= MAX)
+            if(count >= MAX - 8)
             {
                 path = null;
                 return PathfindingResult.ERROR_PATH_TOO_LONG;
@@ -92,7 +97,7 @@ public static class Pathfinding
         return PathfindingResult.ERROR_INTERNAL;
     }
 
-    private static List<PNode> TracePath(PNode end)
+    private List<PNode> TracePath(PNode end)
     {
         List<PNode> path = new List<PNode>();
         PNode child = end;
@@ -116,20 +121,21 @@ public static class Pathfinding
         return path;
     }
 
-    public static void Clear()
+    public void Clear()
     {
         costSoFar.Clear();
         cameFrom.Clear();
         near.Clear();
+        open.Clear();
     }
 
-    private static float Heuristic(PNode a, PNode b)
+    private float Heuristic(PNode a, PNode b)
     {
         // Gives a rough distance.
         return Mathf.Abs(a.X - b.X) + Mathf.Abs(a.Y - b.Y);
     }
 
-    private static float GetCost(PNode a, PNode b)
+    private float GetCost(PNode a, PNode b)
     {
         // Only intended for neighbours.
 
@@ -149,7 +155,7 @@ public static class Pathfinding
         return DIAGONAL_DST;
     }
 
-    private static List<PNode> GetNear(PNode node, TileMap map)
+    private List<PNode> GetNear(PNode node, TileMap map)
     {
         // Want to add nodes connected to the center node, if they are walkable.
         // This code stops the pathfinder from cutting corners, and going through walls that are diagonal from each other.

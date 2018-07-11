@@ -55,6 +55,6 @@ public class Bot : NetworkBehaviour
     {
         Gizmos.color = InFiringAngle() ? Color.red : Color.yellow;
 
-        Gizmos.DrawRay(transform.position, transform.right * 10f);
+        Gizmos.DrawRay(transform.position, transform.right * 5f);
     }
 }

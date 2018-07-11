@@ -12,9 +12,9 @@ public class TileMap : MonoBehaviour
     public Transform RegionParent;
     public PoolableObject RegionPrefab;
 
-    private Dictionary<int, Region> LoadedRegions = new Dictionary<int, Region>();
-    private List<int> toLoad = new List<int>();
-    private List<int> toBin = new List<int>();
+    [System.NonSerialized] private Dictionary<int, Region> LoadedRegions = new Dictionary<int, Region>();
+    [System.NonSerialized] private List<int> toLoad = new List<int>();
+    [System.NonSerialized] private List<int> toBin = new List<int>();
 
     // Represents a loaded verison of a tile map, which can be played in.
     public TileMapData Data;

@@ -13,6 +13,13 @@ public class AgentMovement : NetworkBehaviour
     [Header("Speed")]
     public float BaseSpeed = 5f;
     public float SpeedMultiplier = 1f;
+    public float FinalSpeed
+    {
+        get
+        {
+            return BaseSpeed * SpeedMultiplier;
+        }
+    }
 
     [Header("Velocity")]
     public Vector2 InputDirection;
@@ -28,7 +35,7 @@ public class AgentMovement : NetworkBehaviour
             return;
 
         WorldVelocity = Vector2.Lerp(WorldVelocity, Vector2.zero, WorldVelocityReduction * Time.deltaTime);
-        Vector2 inputVel = InputDirection.normalized * (BaseSpeed * SpeedMultiplier);
+        Vector2 inputVel = InputDirection.normalized * FinalSpeed;
 
         Vector2 velocity = WorldVelocity + inputVel;
 
