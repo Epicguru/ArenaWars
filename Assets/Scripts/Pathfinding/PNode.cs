@@ -23,6 +23,11 @@ public class PNode : FastPriorityQueueNode
         return new Vector2(pn.X, pn.Y);
     }
 
+    public static explicit operator Vector2Int(PNode pn)
+    {
+        return new Vector2Int(pn.X, pn.Y);
+    }
+
     public override bool Equals(object obj)
     {
         var other = (PNode)obj;

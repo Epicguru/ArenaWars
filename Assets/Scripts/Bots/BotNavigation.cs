@@ -6,7 +6,6 @@ using UnityEngine.Networking;
 public class BotNavigation : NetworkBehaviour
 {
     private static Vector2 HALF = Vector2.one / 2f;
-    private const int PATH_START_LENGTH = 5;
 
     public Bot Bot
     {
@@ -35,70 +34,86 @@ public class BotNavigation : NetworkBehaviour
     }
     private Vector2Int _aproxPos = new Vector2Int();
 
-    public PathRequestState state;
+    public Vector2Int CurrentPathTarget
+    {
+        get; private set;
+    }
 
     [System.NonSerialized]
-    private List<PNode> pathStart = new List<PNode>();
+    private List<PNode> path = new List<PNode>();
+
+    [SerializeField]
+    [ReadOnly]
+    private int pathRebuildCount;
 
     public void Update()
-    {        
-        if(Request == null || Request.State == PathRequestState.IDLE)
+    {
+        bool rebuild = PathNeedsRebuild();
+        if (rebuild)
         {
-            if(pathStart == null || pathStart.Count <= 2)
-            {
-                var current = this.AproxTilePos;
-                Request = PathRequest.Create(current.x, current.y, TargetPos.x, TargetPos.y, PathDone);
-            }            
-        }
+            // Are we already rebuilding? Then don't do anything until that is done.
+            // Cancelling could lead to a path never being found.
 
-        if(Request != null)
-        {
-            state = Request.State;
-        }
+            bool req = true;
 
-        if(pathStart != null && pathStart.Count > 0)
-        {
-            Bot.Agent.Movement.InputDirection = (pathStart[0] + HALF) - (Vector2)transform.position;
-            float dst = Vector2.Distance(pathStart[0] + HALF, (Vector2)transform.position);
-            const int FRAME_COUNT = 2;
-            if (dst <= (Bot.Agent.Movement.FinalSpeed * Time.deltaTime) * FRAME_COUNT)
+            if (Request != null && Request.State != PathRequestState.IDLE)
+                req = false;
+
+            if (req)
             {
-                // We will reach this point the next FRAME_COUNT frames.
-                // Move on to the next point by removing the first point.
-                pathStart.RemoveAt(0);
+                RequestNewPath(AproxTilePos.x, AproxTilePos.y, TargetPos.x, TargetPos.y);
             }
         }
+    }
+
+    private void RequestNewPath(int x, int y, int tx, int ty)
+    {
+        if (Request != null)
+        {
+            if(Request.State != PathRequestState.IDLE)
+            {
+                Debug.LogError("New path requested when the last path was in queue or processing! Not valid!");
+                return;
+            }
+        }
+
+        Request = PathRequest.Create(x, y, tx, ty, PathDone);
+    }
+
+    public bool PathNeedsRebuild()
+    {
+        bool pathExists = path != null;
+        bool targetMoved = TargetPos != CurrentPathTarget;
+
+        return !pathExists || targetMoved;
     }
 
     private void PathDone(PathfindingResult result, List<PNode> fullPath)
     {
         if(result != PathfindingResult.SUCCESSFUL)
         {
+            // Did not succeed? Oh well.
             return;
         }
-        if(fullPath == null)
+        if (fullPath == null)
         {
+            // Path was not built, should never be true when sucessful is true but we check anyway.
             return;
         }
 
-        int len = (PATH_START_LENGTH > fullPath.Count ? fullPath.Count : PATH_START_LENGTH);
-        pathStart.Clear();
-
-        // Copy the full path to the limited path, because we don't need all of it, just the next few points.
-        for (int i = 0; i < len; i++)
-        {
-            pathStart.Add(fullPath[i]);
-        }
+        CurrentPathTarget = (Vector2Int)fullPath[fullPath.Count - 1];
+        path = fullPath;
+        pathRebuildCount++;
     }
 
     public void OnDrawGizmosSelected()
     {
-        if (pathStart == null || pathStart.Count < 2)
+        if (path == null || path.Count < 2)
             return;
 
-        for (int i = 0; i < pathStart.Count - 1; i++)
+        for (int i = 0; i < path.Count - 1; i++)
         {
-            Gizmos.DrawLine(pathStart[i] + HALF, pathStart[i + 1] + HALF);
+            Gizmos.DrawLine(path[i] + HALF, path[i + 1] + HALF);
         }
     }
 
