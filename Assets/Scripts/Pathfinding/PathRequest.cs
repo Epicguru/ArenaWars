@@ -24,10 +24,9 @@ public class PathRequest
             Debug.LogWarning("The UponProcessed action is null, request ignored! Returning null.");
             return null;
         }
-
-        if(IdlePool.Count > 0)
+        lock (PathThreader.LOK_2)
         {
-            lock (PathThreader.LOK_2)
+            if (IdlePool.Count > 0)
             {
                 var got = IdlePool.Dequeue();
 
@@ -50,21 +49,21 @@ public class PathRequest
 
                 return got;
             }
-        }
-        else
-        {
-            var got = new PathRequest();
+            else
+            {
+                var got = new PathRequest();
 
-            got.StartX = startX;
-            got.StartY = startY;
-            got.EndX = endX;
-            got.EndY = endY;
-            got.UponProcessed = uponProcessed;
-            got.State = PathRequestState.REQUESTED;
+                got.StartX = startX;
+                got.StartY = startY;
+                got.EndX = endX;
+                got.EndY = endY;
+                got.UponProcessed = uponProcessed;
+                got.State = PathRequestState.REQUESTED;
 
-            Pending.Add(got);
+                Pending.Add(got);
 
-            return got;
+                return got;
+            }
         }
     }
 

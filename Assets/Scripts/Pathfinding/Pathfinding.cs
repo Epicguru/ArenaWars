@@ -5,7 +5,7 @@ using UnityEngine;
 public class Pathfinding
 {
     public const int MAX = 1000;
-    private const float DIAGONAL_DST = 1.41421356237f;
+    public const float DIAGONAL_DST = 1.41421356237f;
 
     private FastPriorityQueue<PNode> open = new FastPriorityQueue<PNode>(MAX);
     private Dictionary<PNode, PNode> cameFrom = new Dictionary<PNode, PNode>();
