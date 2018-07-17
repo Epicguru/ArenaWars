@@ -36,6 +36,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4282209628943110}
   - component: {fileID: 114645360947857928}
+  - component: {fileID: 114621941659376638}
   - component: {fileID: 114439898929391572}
   - component: {fileID: 114741811911053768}
   - component: {fileID: 114964203600734544}
@@ -165,7 +166,7 @@ CircleCollider2D:
   m_GameObject: {fileID: 1042616884481632}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 652ddb7ca2a9d364788bc6e095b54fa4, type: 2}
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
@@ -246,6 +247,25 @@ MonoBehaviour:
   Movement: {fileID: 114741811911053768}
   Rotation: {fileID: 114964203600734544}
   Hands: {fileID: 114787484542029820}
+--- !u!114 &114621941659376638
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1242054787519910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cfe59ae399494d4fb1acaf77452a015, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HasControl: 1
+  Target: {fileID: 0}
+  TargetPos: {x: 0, y: 0}
+  TargetNodeDeadzone: 0.2
+  TargetNodeMaxDistance: 1.5
+  TargetDeadzone: 0.5
+  pathRebuildCount: 0
+  debug: 
 --- !u!114 &114645360947857928
 MonoBehaviour:
   m_ObjectHideFlags: 1
