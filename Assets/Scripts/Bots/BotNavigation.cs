@@ -244,12 +244,20 @@ public class BotNavigation : NetworkBehaviour
             return;
         }
 
+        var tn = GetTargetNode();
+        if (fullPath.Count >= 2 && tn != null && tn.Equals(fullPath[1]))
+        {
+            // The current target node is equal to the second node on the new path.
+            // Going to the first node is probably a stupid idea, let's remove it!
+            fullPath.RemoveAt(0);
+        }
+
         CurrentPathTarget = (Vector2Int)fullPath[fullPath.Count - 1];
         path = fullPath;
         pathRebuildCount++;
     }
 
-    public void OnDrawGizmosSelected()
+    public void OnDrawGizmos()
     {
         if (path == null || path.Count < 2)
             return;
