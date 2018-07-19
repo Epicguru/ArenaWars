@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
 [RequireComponent(typeof(PoolableObject))]
+[RequireComponent(typeof(RegionPhysics))]
 public class Region : MonoBehaviour
 {
     // Is a part of a tile map, has its own texture.
@@ -17,6 +18,19 @@ public class Region : MonoBehaviour
 
     public int X, Y;
     public int Index = -1;
+
+    public RegionPhysics RegionPhysics
+    {
+        get
+        {
+            if(_regionPhysics == null)
+            {
+                _regionPhysics = GetComponent<RegionPhysics>();
+            }
+            return _regionPhysics;
+        }
+    }
+    private RegionPhysics _regionPhysics;
 
     public bool Dirty
     {
@@ -152,6 +166,9 @@ public class Region : MonoBehaviour
                 TexJob.State = JobState.CANCELLED;
             }
         }
+
+        // Physics...
+        RegionPhysics.Despawn();
     }
 
     public bool InRegionBounds(int x, int y)
@@ -230,6 +247,15 @@ public class Region : MonoBehaviour
         {
             Renderer.material.mainTexture = texture;
         }
+    }
+
+    public void PostSpawned()
+    {
+        // Called after UponSpawn, once everything is set up correctly (apart from the texture and physics)
+
+        // Physics...
+        RegionPhysics.Despawn(); // Clear any old ones...
+        RegionPhysics.Build();
     }
 
     private void SetupMesh()

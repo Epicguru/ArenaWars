@@ -9,6 +9,8 @@ public class TileMap : MonoBehaviour
     public const string TILE_DATA_FILE = "Tile IDs.txt";
     public const string TILE_VARIATION_FILE = "Tile Variations.txt";
 
+    public static TileMap Instance;
+
     public Transform RegionParent;
     public PoolableObject RegionPrefab;
 
@@ -24,6 +26,16 @@ public class TileMap : MonoBehaviour
     public byte[] TileVariations;
 
     public string MapNameTemp = "Dev_0";
+
+    public void Awake()
+    {
+        Instance = this;
+    }
+
+    public void OnDestroy()
+    {
+        Instance = null;
+    }
 
     public void Update()
     {
@@ -92,8 +104,7 @@ public class TileMap : MonoBehaviour
         }
 
         Vector2Int mouseCoords = new Vector2Int((int)InputManager.MousePos.x, (int)InputManager.MousePos.y);
-
-        if (IsLoaded() && this.TileInBounds(mouseCoords.x, mouseCoords.y))
+        if (Input.GetKey(KeyCode.Space) && IsLoaded() && this.TileInBounds(mouseCoords.x, mouseCoords.y))
         {
             int tileIndex = GetTileIndex(mouseCoords.x, mouseCoords.y);
             int tx = mouseCoords.x;
@@ -185,6 +196,8 @@ public class TileMap : MonoBehaviour
             r.transform.position = new Vector2(r.X, r.Y) * Region.SIZE;
 
             DrawWholeRegion(r);
+
+            r.PostSpawned();
         }
     }
 
